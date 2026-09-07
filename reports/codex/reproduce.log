@@ -1,0 +1,4 @@
+{"scenario":"foreign-checkout","registeredRoot":"/private/var/folders/yw/_pp1hvqn5lx5pl18cf8stkkh0000gn/T/company-repo-sG6NiT","submittedRoot":"/private/var/folders/yw/_pp1hvqn5lx5pl18cf8stkkh0000gn/T/company-repo-e7mqoD","accepted":true,"taskStatus":"completed"}
+{"scenario":"renew-after-lock-wait","startedBeforeExpiryMs":1478,"finishedAfterExpiryMs":1040,"accepted":true,"result":"renewed"}
+{"scenario":"read-only-index","indexChanged":true,"reportedDirty":false}
+{"scenario":"S1-published-file-entry","publishedEntryPresent":true,"schemaAccepted":false,"issues":[{"code":"unrecognized_keys","path":["files",1],"keys":["math.test.js"]}]}

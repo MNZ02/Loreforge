@@ -1,0 +1,10 @@
+command: npx tsx reports/grok/repro-sha256-head.mjs
+exitCode: 0
+HEAD_LEN 64
+HEAD f8471be9b501748f2166fab12a187c54665e1a5df6c819fc35c90bdccb3dcada
+SCHEMA_64_HEX accepted
+OBSERVE accepted
+REGISTER_OK true
+HANDOFF_OK true
+TASK_STATUS completed
+CURRENT_GIT head=f8471be9… error=null

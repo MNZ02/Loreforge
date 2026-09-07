@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "flash",
+  "scope": "Muse core and storage implementation (src/core/**, src/storage/**, src/evidence/**, tests/core/**, tests/storage/**)",
+  "fingerprint": "e1b1bcb72615e2ffcec3444011531bfbe1904cb475f01fc1c6fb6fba8a3e0abb",
+  "verdict": "pass",
+  "findings": [],
+  "checks": [
+    {
+      "command": "npm run test:core",
+      "exitCode": 0,
+      "summary": "122 tests passed across 33 suites, 0 failures, 0 skipped"
+    },
+    {
+      "command": "npm run check",
+      "exitCode": 0,
+      "summary": "166 tests passed across 41 suites, 0 failures, 0 skipped; typecheck clean; build clean"
+    }
+  ],
+  "evaluatedCriteria": [
+    "A01: Database lifecycle, WAL mode, foreign keys ON, busy timeout 5000ms, schema migrations, and concurrent initialization verified.",
+    "A02: Git common-dir resolution for canonical project identity, worktree mapping, symlink alias equivalence, and non-git rejection verified.",
+    "A03: Cross-project isolation: all entities and queries are strictly scoped by project_id; cross-project lookups return NOT_FOUND without leaking entity existence.",
+    "A04: Competing claims: atomic BEGIN IMMEDIATE transaction with attempt increment guarantees exactly one winner and one CONFLICT under high concurrency.",
+    "A05: Lease expiry: strictly evaluates lease_until <= nowMs; old tokens immediately invalidated at exact 2h boundary; reclaims increment attempt safely.",
+    "A06: Lease renewals extend unexpired leases; release clears owner and token; dependencies block claims until all prerequisite tasks reach completed status.",
+    "A07: Request receipts: canonical hashing over operation, scope, actor, and deep-sorted payload; identical retries replay original response; altered payloads return CONFLICT.",
+    "A08: Handoff transactions: atomic update of task status, handoff row, and receipt insert; fault injection boundaries verify full rollback on error.",
+    "A09: Receipt-first handoff replay: replay succeeds even when the original checkout root is removed or HEAD has advanced without triggering new Git inspection.",
+    "A10: Cancellation race: terminal states (completed/cancelled) are immutable; exactly one terminal winner in concurrent complete vs cancel races.",
+    "A11: Git evidence observation: read-only subprocess with array arguments and timeout; mismatching HEAD or dirty state rejects handoff; reported checks never executed.",
+    "A12: Blocked handoff and reopen: blocked handoff requires valid unanswered questions; claim is released; reopen requires all questions answered; unblocks reclaim.",
+    "A13: Questions and answers: question retry yields identical event; answers restricted to addressed agent; duplicate concurrent answers rejected with CONFLICT.",
+    "A14: Inbox cursor: id > after ordering; limit+1 pagination with nextCursor and hasMore; pure read query that never consumes or alters events.",
+    "A15: Decision supersession: immutable history; single active chain per project; atomic guard on superseded_by_id prevents duplicate supersessions.",
+    "A23: Lock contention: bounded BUSY error with no partial writes when write lock is held; retry succeeds."
+  ],
+  "limitations": [
+    "Dirty Git observations are timestamped observations, not backups or immutable snapshots of worktree content.",
+    "Claims prevent duplicate task ownership, not concurrent edits across different tasks in shared worktrees.",
+    "Lease expiry is passive; expired leases are reclaimed only when subsequent mutations or operations observe the timestamp."
+  ]
+}

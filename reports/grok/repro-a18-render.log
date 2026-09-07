@@ -1,0 +1,6 @@
+command: npx tsx reports/grok/repro-a18-render.mjs
+exitCode: 0
+LENGTH 3987
+DEP_COUNT 20
+MISSING_COUNT 0
+HAS_NOTICE true

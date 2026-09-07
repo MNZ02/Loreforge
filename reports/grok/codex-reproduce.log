@@ -1,0 +1,6 @@
+command: npx tsx reports/codex/reproduce.mjs
+exitCode: 0
+{"scenario":"foreign-checkout","accepted":false,"taskStatus":"CONFLICT"}
+{"scenario":"renew-after-lock-wait","startedBeforeExpiryMs":1475,"finishedAfterExpiryMs":1054,"accepted":false,"result":"STALE_CLAIM"}
+{"scenario":"read-only-index","indexChanged":false,"reportedDirty":false}
+{"scenario":"S1-published-file-entry","publishedEntryPresent":false,"schemaAccepted":false}

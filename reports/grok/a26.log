@@ -1,0 +1,8 @@
+command: npx tsx reports/grok/repro-a26-foreign.mjs
+exitCode: 0
+HELP_STATUS 0
+HELP_HAS_BANNER true
+HELP_CREATED_HOME false
+SAME_PROJECT true
+HOME_DB true
+FOREIGN_NO_DB true

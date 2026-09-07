@@ -1,0 +1,9 @@
+command: npm run check
+fingerprint: 6596c5c536478d39deabb9379674fbcd7c2d9127c9436aa78dac5b4f4667968d
+exitCode: 0
+typecheck: clean
+build: clean
+tests: 178 pass / 45 suites / 0 fail / 0 skipped
+duration_ms: 23809.877834
+before: 6596c5c536478d39deabb9379674fbcd7c2d9127c9436aa78dac5b4f4667968d
+after:  6596c5c536478d39deabb9379674fbcd7c2d9127c9436aa78dac5b4f4667968d

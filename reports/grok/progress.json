@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "owner": "grok",
+  "modelReported": "Grok 4.6 (displayed identity: Grok 4.6; effort flag not visible in this session)",
+  "effortReported": "unverified (PLAN requests high; no CLI effort display in this session)",
+  "milestone": "G4",
+  "status": "complete",
+  "completedSteps": [
+    "G0",
+    "G1",
+    "G2",
+    "G3",
+    "G4"
+  ],
+  "waitingFor": "User/Astra Step 5 fresh-session test of /tmp/agent-company-s1 (software pass unchanged; protocol run is not live S1)",
+  "checks": [
+    {
+      "command": "npx tsx reports/codex/reproduce.mjs",
+      "exitCode": 0,
+      "logPath": "reports/grok/codex-reproduce.log",
+      "summary": "foreign-checkout CONFLICT; renew-after-lock-wait STALE_CLAIM; indexChanged false; published extra key absent"
+    },
+    {
+      "command": "npm run check",
+      "exitCode": 0,
+      "logPath": "reports/grok/check.log",
+      "summary": "typecheck clean; build clean; 178 tests / 45 suites / 0 fail / 0 skipped"
+    },
+    {
+      "command": "npx tsx reports/grok/repro-a26-foreign.mjs",
+      "exitCode": 0,
+      "logPath": "reports/grok/a26.log",
+      "summary": "compiled CLI foreign cwd, temp home, two worktrees, same project"
+    },
+    {
+      "command": "npx tsx reports/grok/repro-a01-concurrent.mjs",
+      "exitCode": 0,
+      "logPath": "reports/grok/repro-a01-concurrent.log",
+      "summary": "12/12 concurrent first opens"
+    },
+    {
+      "command": "workspaceFingerprint before and after npm run check",
+      "exitCode": 0,
+      "logPath": "reports/grok/fingerprint.log",
+      "summary": "6596c5c536478d39deabb9379674fbcd7c2d9127c9436aa78dac5b4f4667968d over 93 entries; contractHash 783540612d791e6835b5e91a64f8bd40c749ed1374da33df6828dfc4d2eaf0ba; unchanged after check"
+    }
+  ],
+  "updatedAt": "2026-09-06T09:21:00Z",
+  "limitations": [
+    "S1 field verification is incomplete. Muse's reported Task A leg was independently confirmed in /tmp/agent-company-s1 (task completed, handoff cf6acefa\u2026, HEAD c4725e0). Flash live session (Task B question/blocked handoff) and a fresh third session have not run. Protocol/walkthrough tests are not a field pass.",
+    "Both implementers now match this fingerprint in core-ready/client-ready and final.md: 6596c5c536478d39deabb9379674fbcd7c2d9127c9436aa78dac5b4f4667968d. Independently recomputed 2026-09-06; 93 entries; contractHash 78354061 unchanged.",
+    "Previous Grok pass on 0ef592a3 remains historical/superseded.",
+    "M0 baseline drift remains for PLAN/ACCEPTANCE/GOAL docs and README.md. CONTRACT.md matches baseline f52bb1faeed398470da6cb7d5616b70a528c4b86848f8e030ab2b61d234b65e4.",
+    "Grok 4.6 identity visible; effort flag unverified.",
+    "A later covered-file edit invalidates this verdict."
+  ]
+}

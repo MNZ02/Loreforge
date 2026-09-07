@@ -1,0 +1,296 @@
+
+> agent-company@0.1.0 check
+> npm run typecheck && npm run build && npm test
+
+
+> agent-company@0.1.0 typecheck
+> tsc --noEmit
+
+
+> agent-company@0.1.0 build
+> tsc -p tsconfig.build.json
+
+
+> agent-company@0.1.0 test
+> node scripts/test.mjs all
+
+running 20 test file(s) [all]:
+  tests/acceptance/cli-basics.test.ts
+  tests/acceptance/full-integration.test.ts
+  tests/cli/args.test.ts
+  tests/cli/input.test.ts
+  tests/cli/instructions.test.ts
+  tests/cli/main.test.ts
+  tests/cli/output.test.ts
+  tests/context/render.test.ts
+  tests/core/fingerprint.test.ts
+  tests/core/schemas-limits.test.ts
+  tests/core/schemas.test.ts
+  tests/storage/busy.test.ts
+  tests/storage/claims.test.ts
+  tests/storage/context.test.ts
+  tests/storage/decisions.test.ts
+  tests/storage/handoffs.test.ts
+  tests/storage/lifecycle.test.ts
+  tests/storage/messages.test.ts
+  tests/storage/projects.test.ts
+  tests/storage/tasks.test.ts
+▶ CLI Basics Acceptance (A16, A17, A24, A26)
+  ✔ A17: --help and scoped help exit 0 without creating state (250.643084ms)
+  ✔ A17: missing-state read returns NOT_FOUND (exit 3) and creates no database (117.347875ms)
+  ✔ A16: oversized input (>64 KiB) and malformed JSON fail before mutation without leaking secrets (277.202167ms)
+  ✔ A24: instructions show safely quotes paths with spaces and does not modify filesystem (143.862083ms)
+  ✔ A26: compiled CLI runs from foreign cwd with explicit temp home (85.699792ms)
+✔ CLI Basics Acceptance (A16, A17, A24, A26) (876.8235ms)
+▶ Full Multi-Process Integration Acceptance (A03, A12, A14, A21, A22)
+  ✔ A22: space-containing repo path works and git status stays clean (450.82875ms)
+  ✔ A03: cross-project isolation: Project A entities queried under B return NOT_FOUND (833.270958ms)
+  ✔ A12 & A21: blocked handoff releases claim, answers unblock reopen, second attempt completes across processes (1144.345125ms)
+  ✔ A14: inbox cursor retrieves ordered events without duplicates or losing events (665.13275ms)
+✔ Full Multi-Process Integration Acceptance (A03, A12, A14, A21, A22) (3094.371458ms)
+▶ CLI Argument Parser (A16, A17)
+  ✔ parses valid standard operation (0.8055ms)
+  ✔ parses stdin input indicator '-' (0.125209ms)
+  ✔ parses instructions show command (0.113083ms)
+  ✔ detects global --help (0.097416ms)
+  ✔ detects scoped <namespace> <verb> --help (0.096708ms)
+  ✔ throws CliValidationError on unknown command namespace (0.331958ms)
+  ✔ throws CliValidationError on unknown verb (0.114708ms)
+  ✔ throws CliValidationError on missing --input (0.152083ms)
+  ✔ throws CliValidationError on unknown flag (0.147167ms)
+✔ CLI Argument Parser (A16, A17) (2.963459ms)
+▶ CLI Bounded Input (A16)
+  ✔ successfully reads valid small JSON object from stdin (2.668917ms)
+  ✔ fails with VALIDATION when input exceeds 64 KiB limit (0.412625ms)
+  ✔ fails with VALIDATION on invalid UTF-8 (0.530208ms)
+  ✔ fails with VALIDATION on malformed JSON without leaking input content (0.614375ms)
+  ✔ fails with VALIDATION when input contains forbidden 'operation' field (0.634875ms)
+✔ CLI Bounded Input (A16) (7.246584ms)
+▶ CLI Instructions Generator (A24)
+  ✔ quotes shell paths containing spaces and quotes safely (0.51175ms)
+  ✔ generates instructions snippet with concrete IDs and safely quoted paths (0.34425ms)
+  ✔ rejects invalid project UUID format with CliValidationError (0.468667ms)
+  ✔ rejects invalid agent ID format with CliValidationError (0.16725ms)
+✔ CLI Instructions Generator (A24) (2.190667ms)
+▶ CLI main runner (A16, A17)
+  ✔ A17: --help exits 0 and prints help without creating state directory (1.896334ms)
+  ✔ A24: instructions show exits 0 and creates no state (1.225834ms)
+  ✔ A17: read against missing state returns NOT_FOUND (exit 3) and creates no state or db (2.352833ms)
+  ✔ A16: rejects invalid schema payload before opening state (exit 2) (3.269666ms)
+  ✔ executes valid request via openCore handle and formats success (22.993209ms)
+✔ CLI main runner (A16, A17) (34.238083ms)
+▶ CLI Output Formatting (A17)
+  ✔ formats successful response as JSON on stdout (0.526583ms)
+  ✔ visibly includes claimToken for task.claim in human-readable mode (0.087334ms)
+  ✔ excludes claimToken from other human-readable outputs (0.059458ms)
+  ✔ formats error response as JSON on stdout and returns exit code (0.086042ms)
+  ✔ formats error response on stderr for human mode and returns exit code (0.055167ms)
+  ✔ maps all documented error codes to correct exit codes (0.041167ms)
+✔ CLI Output Formatting (A17) (1.252375ms)
+▶ renderContext (A18, A19, A20)
+  ✔ A18: deterministically renders within 4000 char budget (0.649083ms)
+  ✔ A18: deterministically renders within 16000 and 32000 char budgets (0.131458ms)
+  ✔ A18: rejects invalid maxChars outside 4000..32000 range (0.224833ms)
+  ✔ A19: review context excludes implementation prose and Q&A; explicitly reports policy omissions (0.241041ms)
+  ✔ A20: sanitizes terminal escapes, backticks, and labels peer text safely (0.149958ms)
+  ✔ renders minimal snapshot with missing git cleanly (0.112625ms)
+  ✔ A18 (GROK-002): retains all 20 dependency IDs and statuses at 4000 char budget with max-length titles (0.572542ms)
+✔ renderContext (A18, A19, A20) (3.820833ms)
+▶ fingerprint helper
+  ✔ is stable on an unchanged tree (3.263125ms)
+  ✔ changes when a covered file changes (1.629334ms)
+  ✔ sorts entries by path regardless of input order (2.335292ms)
+  ✔ refuses symlinks instead of hashing outside targets (2.659958ms)
+  ✔ workspace fingerprint is stable and contract hash is a hex digest (13.654833ms)
+  ✔ workspace fingerprint excludes reports and dist (5.516917ms)
+✔ fingerprint helper (29.769625ms)
+▶ contract operations
+  ✔ defines exactly sixteen operations (0.663041ms)
+  ✔ accepts a valid project.register envelope (2.875708ms)
+  ✔ accepts a valid agent.register envelope (0.940917ms)
+  ✔ accepts a valid task.create envelope (36.01525ms)
+  ✔ accepts a valid task.get envelope (3.180375ms)
+  ✔ accepts a valid task.list envelope (0.813333ms)
+  ✔ accepts a valid task.claim envelope (0.481417ms)
+  ✔ accepts a valid task.renew envelope (0.238667ms)
+  ✔ accepts a valid task.release envelope (0.116208ms)
+  ✔ accepts a valid task.reopen envelope (0.125958ms)
+  ✔ accepts a valid task.cancel envelope (0.086833ms)
+  ✔ accepts a valid handoff.submit envelope (2.855166ms)
+  ✔ accepts a valid question.ask envelope (0.213625ms)
+  ✔ accepts a valid question.answer envelope (0.131167ms)
+  ✔ accepts a valid inbox.list envelope (0.272208ms)
+  ✔ accepts a valid decision.record envelope (0.174666ms)
+  ✔ accepts a valid context.get envelope (0.102833ms)
+  ✔ rejects non-object inputs (0.460583ms)
+  ✔ rejects wrong schemaVersion and unknown operations (0.173708ms)
+  ✔ rejects unknown top-level keys (0.064875ms)
+  ✔ rejects unknown nested payload keys (0.198833ms)
+✔ contract operations (52.041375ms)
+▶ envelope field rules
+  ✔ forbids projectId and actorId on registration operations (0.137875ms)
+  ✔ requires requestId on registrations and forbids it on reads (0.134458ms)
+  ✔ forbids actorId on reads other than inbox.list (0.091625ms)
+  ✔ requires projectId, actorId, and requestId on mutations (0.094958ms)
+  ✔ requires projectId on reads (0.037291ms)
+  ✔ rejects omitted required payload fields (0.140458ms)
+  ✔ applies read defaults before use (0.053833ms)
+✔ envelope field rules (0.755417ms)
+▶ nested limits
+  ✔ rejects overlong title, description, summary, and bodies (0.301541ms)
+  ✔ rejects overlong or oversized list strings (0.237541ms)
+  ✔ rejects duplicate dependency and blocking-question IDs (0.122625ms)
+  ✔ rejects oversized evidence files and checks (0.710459ms)
+  ✔ rejects bad relative paths and duplicate evidence paths (1.295041ms)
+  ✔ rejects bad checkout roots and heads (0.545416ms)
+  ✔ rejects out-of-range paging (0.443583ms)
+✔ nested limits (3.820208ms)
+▶ identifiers
+  ✔ rejects invalid project, task, and question IDs (0.362166ms)
+  ✔ rejects invalid agent IDs (0.498375ms)
+  ✔ rejects invalid requestIds and claim tokens (0.404833ms)
+  ✔ rejects invalid project names and registration roots (0.263958ms)
+✔ identifiers (1.686709ms)
+▶ text normalization
+  ✔ trims values and measures limits after trim (0.335375ms)
+✔ text normalization (0.417708ms)
+▶ validation details
+  ✔ exposes only issue paths and codes, never submitted values (1.019875ms)
+✔ validation details (1.146917ms)
+▶ contract operations
+  ✔ defines exactly sixteen operations (0.338417ms)
+  ✔ accepts a valid project.register envelope (5.754541ms)
+  ✔ accepts a valid agent.register envelope (0.349042ms)
+  ✔ accepts a valid task.create envelope (0.423958ms)
+  ✔ accepts a valid task.get envelope (0.792292ms)
+  ✔ accepts a valid task.list envelope (6.771375ms)
+  ✔ accepts a valid task.claim envelope (1.905666ms)
+  ✔ accepts a valid task.renew envelope (3.209542ms)
+  ✔ accepts a valid task.release envelope (0.219917ms)
+  ✔ accepts a valid task.reopen envelope (0.152667ms)
+  ✔ accepts a valid task.cancel envelope (0.099458ms)
+  ✔ accepts a valid handoff.submit envelope (7.696208ms)
+  ✔ accepts a valid question.ask envelope (5.339333ms)
+  ✔ accepts a valid question.answer envelope (12.13125ms)
+  ✔ accepts a valid inbox.list envelope (0.360458ms)
+  ✔ accepts a valid decision.record envelope (0.2095ms)
+  ✔ accepts a valid context.get envelope (0.117042ms)
+  ✔ rejects non-object inputs (3.793875ms)
+  ✔ rejects wrong schemaVersion and unknown operations (0.222167ms)
+  ✔ rejects unknown top-level keys (0.070625ms)
+  ✔ rejects unknown nested payload keys (0.257375ms)
+✔ contract operations (51.062ms)
+▶ envelope field rules
+  ✔ forbids projectId and actorId on registration operations (0.449208ms)
+  ✔ requires requestId on registrations and forbids it on reads (1.467334ms)
+  ✔ forbids actorId on reads other than inbox.list (0.154084ms)
+  ✔ requires projectId, actorId, and requestId on mutations (0.117416ms)
+  ✔ requires projectId on reads (0.047625ms)
+  ✔ rejects omitted required payload fields (1.384291ms)
+  ✔ applies read defaults before use (0.145667ms)
+✔ envelope field rules (3.93ms)
+▶ lock contention (A23)
+  ✔ returns bounded BUSY with no partial write, then succeeds on retry (8276.975541ms)
+✔ lock contention (A23) (8277.764209ms)
+▶ competing claims (A04)
+  ✔ two processes claiming at once produce exactly one owner (5216.30875ms)
+✔ competing claims (A04) (5216.73ms)
+▶ concurrent identical retries (A07 race)
+  ✔ two processes replaying one key get the identical original result (5110.106042ms)
+✔ concurrent identical retries (A07 race) (5110.219041ms)
+▶ lease expiry and attempts (A05 lease parts)
+  ✔ expires at exactly 2h: old token dies, reclaim increments attempt (92.414125ms)
+✔ lease expiry and attempts (A05 lease parts) (92.492875ms)
+▶ renew, release, and dependency gating (A06 core parts)
+  ✔ renews before expiry, releases cleanly, and reclaims with a new attempt (97.02125ms)
+  ✔ blocks claims until dependencies complete and rejects live double claims (78.385541ms)
+✔ renew, release, and dependency gating (A06 core parts) (175.527291ms)
+▶ cancellation states
+  ✔ cancels open and running tasks, clears claims, and rejects terminal recancel (77.464708ms)
+✔ cancellation states (77.53475ms)
+▶ context selection (work mode)
+  ✔ selects task, dependencies, handoffs, questions, and relevant decisions (505.969417ms)
+  ✔ orders unanswered questions first (196.526209ms)
+✔ context selection (work mode) (703.238042ms)
+▶ context review mode
+  ✔ omits prose and Q&A from selection while keeping evidence and decisions (395.575875ms)
+✔ context review mode (395.660333ms)
+▶ context caps and omitted counts
+  ✔ caps handoffs at 20 across task and dependencies (1283.833125ms)
+  ✔ caps questions and decisions at 20 with accurate omissions (125.25125ms)
+✔ context caps and omitted counts (1409.19575ms)
+▶ context robustness
+  ✔ survives a missing registered checkout (93.149917ms)
+  ✔ rejects foreign tasks without leaking (116.069ms)
+✔ context robustness (209.341875ms)
+▶ completion tails (A05/A06 endings)
+  ✔ reclaimed tasks complete once; late original tokens change nothing (196.480125ms)
+  ✔ unblocks dependent claims once the dependency completes (129.762083ms)
+✔ completion tails (A05/A06 endings) (326.332ms)
+▶ decision supersession (A15)
+  ✔ keeps immutable history with project-scoped single-active chains (215.9425ms)
+  ✔ scopes supersession targets to their own project (389.279167ms)
+✔ decision supersession (A15) (605.679834ms)
+▶ completed handoffs (A08)
+  ✔ commits task, handoff, and receipt atomically (454.05225ms)
+  ✔ rolls back every effect when a write boundary fails, verified by reopen (741.049166ms)
+✔ completed handoffs (A08) (1195.823584ms)
+▶ handoff retries without the checkout (A09)
+  ✔ replays after the checkout is removed (161.199292ms)
+  ✔ replays after HEAD moves on (185.9125ms)
+✔ handoff retries without the checkout (A09) (347.233875ms)
+▶ cancel versus complete race (A10)
+  ✔ exactly one terminal winner across two processes (5192.848292ms)
+✔ cancel versus complete race (A10) (5192.9805ms)
+▶ observation mismatches and failed collection (A11)
+  ✔ rejects mismatching head or dirty without completing (195.639875ms)
+  ✔ rejects new handoffs when observation fails and never runs checks (203.465416ms)
+  ✔ accepts 64-hex SHA-256 HEADs for observation and completion (GROK-001) (149.729083ms)
+✔ observation mismatches and failed collection (A11) (549.020167ms)
+▶ claim replay and blocked guards
+  ✔ replaying the original claim never renews the lease or adds an attempt (79.747083ms)
+  ✔ guards blocked/completed outcome mismatches before questions exist (179.482208ms)
+✔ claim replay and blocked guards (259.30675ms)
+▶ storage lifecycle (A01)
+  ✔ initializes twice, preserves data, and keeps one schema version (10.267792ms)
+  ✔ initializes from two processes concurrently without losing data (5023.289042ms)
+  ✔ never reports IO when two processes open a fresh home at once (GROK-003) (17761.748875ms)
+  ✔ enables foreign keys, uses a private database file, and guards schema (2.712ms)
+✔ storage lifecycle (A01) (22798.899083ms)
+▶ blocked handoff and reopen (A12)
+  ✔ releases claim, requires answers, then reclaims and completes (384.138208ms)
+✔ blocked handoff and reopen (A12) (384.570542ms)
+▶ question and answer receipts (A13)
+  ✔ retries yield one question and one event each (151.677583ms)
+  ✔ rejects wrong recipients and concurrent double answers (5185.755583ms)
+  ✔ rejects questions on terminal tasks and foreign question IDs (173.356625ms)
+✔ question and answer receipts (A13) (5510.973917ms)
+▶ inbox cursors (A14)
+  ✔ pages without loss or duplication and never consumes (80.781417ms)
+✔ inbox cursors (A14) (80.846042ms)
+▶ project identity (A02)
+  ✔ maps a root and its real worktree to one project (231.71675ms)
+  ✔ treats symlink aliases as the same project (189.4905ms)
+  ✔ treats an independent clone as a different project (180.615541ms)
+  ✔ rejects non-Git and missing roots without mutating (31.909958ms)
+  ✔ replays duplicate registration deterministically (129.122208ms)
+  ✔ resolves agent registration conflicts by name (3.061958ms)
+✔ project identity (A02) (766.633792ms)
+▶ tasks and project isolation (A03)
+  ✔ creates, gets, and lists tasks within one project (309.597916ms)
+  ✔ links dependencies and pages list output with omitted counts (234.750167ms)
+  ✔ reveals nothing across projects (203.362833ms)
+✔ tasks and project isolation (A03) (748.207625ms)
+▶ request receipts (A07 basics)
+  ✔ replays identical retries and conflicts on changed payloads (185.310333ms)
+  ✔ scopes identical keys independently by actor and project (230.480875ms)
+  ✔ does not cache failed requests (169.614ms)
+✔ request receipts (A07 basics) (585.589792ms)
+ℹ tests 169
+ℹ suites 41
+ℹ pass 169
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23467.154583

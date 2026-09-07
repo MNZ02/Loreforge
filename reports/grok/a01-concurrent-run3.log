@@ -1,0 +1,11 @@
+▶ storage lifecycle (A01)
+  ✔ initializes from two processes concurrently without losing data (5047.691208ms)
+✔ storage lifecycle (A01) (5048.150541ms)
+ℹ tests 1
+ℹ suites 1
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5171.369541

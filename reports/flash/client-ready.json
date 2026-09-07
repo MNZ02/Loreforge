@@ -1,0 +1,50 @@
+{
+  "milestone": "F5-codex004",
+  "owner": "flash",
+  "timestamp": "2026-09-06T09:05:00.000Z",
+  "contractHash": "783540612d791e6835b5e91a64f8bd40c749ed1374da33df6828dfc4d2eaf0ba",
+  "workspaceFingerprint": "6596c5c536478d39deabb9379674fbcd7c2d9127c9436aa78dac5b4f4667968d",
+  "coverage": "reports/flash/coverage.md",
+  "checks": [
+    {
+      "command": "npm run check",
+      "exitCode": 0,
+      "summary": "178 tests passed across 45 suites, 0 failures, 0 skipped; typecheck clean; build clean"
+    },
+    {
+      "command": "npm run test:client",
+      "exitCode": 0,
+      "summary": "36 tests passed across 6 suites, 0 failures, 0 skipped"
+    },
+    {
+      "command": "npm run test:acceptance",
+      "exitCode": 0,
+      "summary": "11 tests passed across 3 suites including full two-agent walkthrough and thickened A26"
+    },
+    {
+      "command": "npx tsx reports/grok/repro-a18-render.mjs",
+      "exitCode": 0,
+      "summary": "GROK-002 reproduction passes: 20 dependencies with 200-char titles render with all IDs complete within 4000 char budget"
+    },
+    {
+      "command": "node dist/cli/main.js (foreign cwd & linked worktree - thickened A26)",
+      "exitCode": 0,
+      "summary": "compiled CLI executes cleanly from outside package root with no cwd import assumptions; registers root and worktree to same project"
+    },
+    {
+      "command": "CODEX-004 verification (npx tsx reports/codex/reproduce.mjs & acceptance test)",
+      "exitCode": 0,
+      "summary": "published walkthrough README.md contains no unrecognized keys under EvidenceInputSchema; two-agent walkthrough passes from checkout cwd"
+    }
+  ],
+  "knownLimits": [
+    "Single-line JSON stdout requirement: human-readable stdout is the default; --json flag emits strictly one JSON response line on stdout.",
+    "Bounded input: CLI strictly limits stdin and file input to 64 KiB (65,536 bytes) with utf-8 encoding.",
+    "State initialization: CLI never initializes or creates a database file on --help or missing-state read operations.",
+    "Claim token privacy: claim tokens are displayed only in direct successful task claim results; they are never rendered in task context, logs, or error responses.",
+    "Context budget: renderContext deterministically trims section items from bottom up to enforce 4000..32000 char budget with explicit omission notices.",
+    "Dependency preservation: renderContext deterministically shortens dependency titles when budget is constrained, guaranteeing all dependency IDs and statuses remain intact.",
+    "Review mode: renderContext strictly strips handoff prose narratives, unresolved items, and question/answer bodies when mode=review.",
+    "Terminal/shell safety: renderContext strips ANSI escape sequences and escapes markdown backticks in all external notes and summaries."
+  ]
+}
