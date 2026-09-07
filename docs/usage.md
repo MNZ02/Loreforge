@@ -7,7 +7,7 @@
 ## Core Concepts
 
 - **Project**: A registered git repository. Worktrees sharing the same git common directory share the same project identity.
-- **Agent**: A registered identity label (for example `flash`, `muse`, `human`). Identities are coordination labels, not cryptographic authenticators.
+- **Agent**: A registered identity label for one CLI session (for example `codex`, `claude`, `cursor`, `grok`, `human`). Identities are coordination labels, not cryptographic authenticators and not roles. Any registered agent may claim any open task; implement vs review is `context` mode + whether that session edits, not the vendor name.
 - **Task**: A unit of work with a lifecycle: `open` -> `running` -> `completed` | `blocked` | `cancelled`. A blocked task may be `reopen`ed once all blocking questions are answered.
 - **Claim**: An exclusive lease on a task for 2 hours. Claim tokens are private secrets returned only to the claiming agent.
 - **Handoff**: A structured record of work done or blockers encountered, including agent-reported file changes, test checks, and git evidence.
@@ -384,10 +384,22 @@ lore context --input - <<'EOF'
 EOF
 ```
 
-### 8. Instructions Export
+### 8. First-run init
+
+```bash
+lore detect
+lore init --write-rules --demo
+lore init --agent codex:implement --agent claude:review --write-rules --demo
+```
+
+With no `--agent`, init scans PATH and home config dirs for known CLIs. `lore detect` prints the same list. Auth-file presence is not a billed-plan check. TTY init still asks implement / review / both. Not a `postinstall` hook. See [Install into sessions](integrations.md#install-into-sessions).
+
+### 9. Instructions Export
 
 Display safely quoted integration snippet:
 
 ```bash
 lore instructions show --project <PROJECT_UUID> --agent <AGENT_ID> [--home <DIR>]
 ```
+
+Paste that into each CLI's always-on rules, using **that session's** agent id. See [Install into sessions](integrations.md#install-into-sessions) and [templates/session-rule.md](../templates/session-rule.md). Loreforge never starts models or creates worktrees. Roles are not bound to vendor names.
