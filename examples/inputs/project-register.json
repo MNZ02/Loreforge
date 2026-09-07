@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "requestId": "register-proj-fixture-1",
+  "payload": {
+    "root": "/tmp/example-repo",
+    "name": "Example Project"
+  }
+}

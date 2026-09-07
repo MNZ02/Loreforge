@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "projectId": "11111111-1111-4111-8111-111111111111",
+  "actorId": "muse",
+  "requestId": "handoff-task1-complete",
+  "payload": {
+    "taskId": "22222222-2222-4222-8222-222222222222",
+    "claimToken": "00000000-0000-4000-8000-000000000001",
+    "outcome": "completed",
+    "summary": "Implemented database schema, SQLite migrations, and initial contracts.",
+    "evidence": {
+      "checkoutRoot": "/tmp/example-repo",
+      "head": "0123456789abcdef0123456789abcdef01234567",
+      "dirty": false,
+      "files": [
+        {
+          "path": "src/core/contracts.ts",
+          "change": "added"
+        }
+      ],
+      "checks": [
+        {
+          "command": "npm test",
+          "outcome": "passed",
+          "summary": "Core unit tests passed."
+        }
+      ]
+    },
+    "unresolved": [],
+    "nextSteps": [
+      "Flash can begin integration with core."
+    ],
+    "blockingQuestionIds": []
+  }
+}

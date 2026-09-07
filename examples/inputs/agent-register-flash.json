@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "requestId": "register-agent-flash-1",
+  "payload": {
+    "id": "flash",
+    "displayName": "Flash Agent"
+  }
+}

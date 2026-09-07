@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "projectId": "11111111-1111-4111-8111-111111111111",
+  "actorId": "muse",
+  "requestId": "decision-record-1",
+  "payload": {
+    "body": "Use node:sqlite DatabaseSync with WAL mode and foreign keys ON.",
+    "paths": [
+      "src/core/index.ts",
+      "src/storage/db.ts"
+    ],
+    "supersedesId": null
+  }
+}
