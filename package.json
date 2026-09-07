@@ -1,0 +1,33 @@
+{
+  "name": "loreforge",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Loreforge — shared memory for independent agents.",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "bin": {
+    "lore": "dist/cli/main.js",
+    "company": "dist/cli/main.js"
+  },
+  "scripts": {
+    "lore": "tsx src/cli/main.ts",
+    "company": "tsx src/cli/main.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node scripts/test.mjs all",
+    "test:core": "node scripts/test.mjs core",
+    "test:client": "node scripts/test.mjs client",
+    "test:acceptance": "node scripts/test.mjs acceptance",
+    "check": "npm run typecheck && npm run build && npm test"
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3"
+  }
+}
