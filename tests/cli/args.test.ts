@@ -48,6 +48,57 @@ describe("CLI Argument Parser (A16, A17)", () => {
     if (inbox.kind === "operation") assert.equal(inbox.operation, "inbox.list");
   });
 
+  it("parses lore init with repeated --agent id:role", () => {
+    const parsed = parseCliArgs([
+      "init",
+      "--agent",
+      "codex:implement",
+      "--agent",
+      "grok:review",
+      "--root",
+      "/tmp/repo",
+      "--name",
+      "Demo",
+      "--write-rules",
+      "--demo",
+      "--home",
+      "/tmp/home",
+      "--json",
+    ]);
+    assert.equal(parsed.kind, "init");
+    if (parsed.kind === "init") {
+      assert.deepEqual(parsed.agents, [
+        { id: "codex", role: "implement" },
+        { id: "grok", role: "review" },
+      ]);
+      assert.equal(parsed.root, "/tmp/repo");
+      assert.equal(parsed.name, "Demo");
+      assert.equal(parsed.writeRules, true);
+      assert.equal(parsed.demo, true);
+      assert.equal(parsed.detect, true);
+      assert.equal(parsed.json, true);
+    }
+  });
+
+  it("parses lore detect", () => {
+    const parsed = parseCliArgs(["detect", "--json"]);
+    assert.equal(parsed.kind, "detect");
+    if (parsed.kind === "detect") assert.equal(parsed.json, true);
+  });
+
+  it("parses lore init --no-detect", () => {
+    const parsed = parseCliArgs(["init", "--no-detect", "--agent", "alice:both"]);
+    assert.equal(parsed.kind, "init");
+    if (parsed.kind === "init") assert.equal(parsed.detect, false);
+  });
+
+  it("rejects invalid init role", () => {
+    assert.throws(
+      () => parseCliArgs(["init", "--agent", "codex:owner"]),
+      (err: any) => err instanceof CliValidationError && err.message.includes("Invalid role"),
+    );
+  });
+
   it("parses instructions show command", () => {
     const parsed = parseCliArgs([
       "instructions",

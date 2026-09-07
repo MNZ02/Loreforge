@@ -40,12 +40,43 @@ export interface InstructionsParsedArgs {
   help: boolean;
 }
 
+export type InitRole = "implement" | "review" | "both";
+
+export interface InitAgentSpec {
+  id: string;
+  role: InitRole;
+}
+
+export interface InitParsedArgs {
+  kind: "init";
+  home?: string;
+  json: boolean;
+  root?: string;
+  name?: string;
+  agents: InitAgentSpec[];
+  writeRules: boolean;
+  demo: boolean;
+  detect: boolean;
+  help: boolean;
+}
+
+export interface DetectParsedArgs {
+  kind: "detect";
+  json: boolean;
+  help: boolean;
+}
+
 export interface HelpParsedArgs {
   kind: "help";
   topic?: string;
 }
 
-export type ParsedArgs = StandardParsedArgs | InstructionsParsedArgs | HelpParsedArgs;
+export type ParsedArgs =
+  | StandardParsedArgs
+  | InstructionsParsedArgs
+  | InitParsedArgs
+  | DetectParsedArgs
+  | HelpParsedArgs;
 
 // Everyday verbs Astra named: lore context / handoff / ask / inbox.
 // Full namespace+verb forms remain valid.
@@ -100,6 +131,24 @@ export class CliValidationError extends Error {
   }
 }
 
+const INIT_ROLES = new Set<InitRole>(["implement", "review", "both"]);
+const AGENT_ID_RE = /^[a-z][a-z0-9_-]{0,63}$/;
+
+/** Parse `id` or `id:implement|review|both`. Default role is both. */
+export function parseAgentSpec(raw: string): InitAgentSpec {
+  const trimmed = raw.trim();
+  const colon = trimmed.indexOf(":");
+  const id = (colon === -1 ? trimmed : trimmed.slice(0, colon)).trim();
+  const roleRaw = (colon === -1 ? "both" : trimmed.slice(colon + 1)).trim();
+  if (!AGENT_ID_RE.test(id)) {
+    throw new CliValidationError(`Invalid agent id '${id}'`);
+  }
+  if (!INIT_ROLES.has(roleRaw as InitRole)) {
+    throw new CliValidationError(`Invalid role '${roleRaw}' for agent '${id}' (use implement, review, or both)`);
+  }
+  return { id, role: roleRaw as InitRole };
+}
+
 /**
  * Parses raw command-line argument arrays strictly according to CONTRACT.md.
  * Throws CliValidationError on unknown flags, unknown commands, or missing required options.
@@ -121,6 +170,12 @@ export function parseCliArgs(args: string[]): ParsedArgs {
   let json = false;
   let projectId: string | undefined;
   let agentId: string | undefined;
+  const agentSpecs: string[] = [];
+  let root: string | undefined;
+  let name: string | undefined;
+  let writeRules = false;
+  let demo = false;
+  let detect = true;
 
   let i = 0;
   while (i < args.length) {
@@ -161,15 +216,72 @@ export function parseCliArgs(args: string[]): ParsedArgs {
         throw new CliValidationError("Missing value for --agent flag");
       }
       agentId = args[i];
+      agentSpecs.push(args[i]);
     } else if (arg.startsWith("--agent=")) {
       agentId = arg.slice("--agent=".length);
       if (!agentId) throw new CliValidationError("Empty value for --agent");
+      agentSpecs.push(agentId);
+    } else if (arg === "--root") {
+      i++;
+      if (i >= args.length || args[i].startsWith("--")) {
+        throw new CliValidationError("Missing value for --root flag");
+      }
+      root = args[i];
+    } else if (arg.startsWith("--root=")) {
+      root = arg.slice("--root=".length);
+      if (!root) throw new CliValidationError("Empty value for --root");
+    } else if (arg === "--name") {
+      i++;
+      if (i >= args.length || args[i].startsWith("--")) {
+        throw new CliValidationError("Missing value for --name flag");
+      }
+      name = args[i];
+    } else if (arg.startsWith("--name=")) {
+      name = arg.slice("--name=".length);
+      if (!name) throw new CliValidationError("Empty value for --name");
+    } else if (arg === "--write-rules") {
+      writeRules = true;
+    } else if (arg === "--demo") {
+      demo = true;
+    } else if (arg === "--detect") {
+      detect = true;
+    } else if (arg === "--no-detect") {
+      detect = false;
     } else if (arg.startsWith("-")) {
       throw new CliValidationError(`Unknown flag: ${arg}`);
     } else {
       positionals.push(arg);
     }
     i++;
+  }
+
+  if (positionals.length === 1 && positionals[0] === "detect") {
+    return { kind: "detect", json, help: false };
+  }
+
+  if (positionals.length === 1 && positionals[0] === "init") {
+    const seen = new Set<string>();
+    const agents: InitAgentSpec[] = [];
+    for (const spec of agentSpecs) {
+      const parsedAgent = parseAgentSpec(spec);
+      if (seen.has(parsedAgent.id)) {
+        throw new CliValidationError(`Duplicate agent id '${parsedAgent.id}'`);
+      }
+      seen.add(parsedAgent.id);
+      agents.push(parsedAgent);
+    }
+    return {
+      kind: "init",
+      home,
+      json,
+      root,
+      name,
+      agents,
+      writeRules,
+      demo,
+      detect,
+      help: false,
+    };
   }
 
   if (positionals.length === 1 && SHORT_COMMANDS[positionals[0]]) {

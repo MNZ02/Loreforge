@@ -8,6 +8,9 @@ import { readBoundedInput, CliInputError } from "./input.js";
 import { handleSuccessOutput, handleErrorOutput } from "./output.js";
 import { generateInstructions } from "./instructions.js";
 import { resolveHomeDir, doesStateExist } from "./home.js";
+import { resolveInitOptions, runInit } from "./init.js";
+import { detectCodingClis } from "./detect.js";
+import { homedir } from "node:os";
 
 export interface CliDependencies {
   stdin?: NodeJS.ReadableStream;
@@ -28,6 +31,8 @@ Usage:
   lore inbox    --input <file|-> [--home <dir>] [--json]
   lore <namespace> <verb> --input <file|-> [--home <dir>] [--json]
   lore instructions show --project <uuid> --agent <agent-id> [--home <dir>]
+  lore init [--agent id[:role]]... [--root <git>] [--name <name>] [--write-rules] [--demo] [--detect|--no-detect] [--home <dir>] [--json]
+  lore detect [--json]
   lore --help
 
 Everyday:
@@ -50,13 +55,20 @@ Other operations:
   question answer         Answer a pending question
   decision record         Record an architectural decision
   instructions show       Print generic session instruction template
+  init                    Register a repo and agents, optional sample tasks and session rules
+  detect                  List local coding CLIs (PATH + config dirs; does not read keys)
 
 Options:
   --input <file|->        Path to JSON envelope input file or '-' for stdin (max 64 KiB)
   --home <dir>            State directory (default: LOREFORGE_HOME or ~/.loreforge/context-v1)
   --json                  Output exactly one JSON response line on stdout
   --project <uuid>        Project UUID (for instructions show)
-  --agent <agent-id>      Agent ID (for instructions show)
+  --agent <id[:role]>     Agent id, optional :implement|:review|:both (repeatable on init)
+  --root <dir>            Git repository root (init)
+  --name <name>           Project display name (init)
+  --write-rules           Init: write always-on rules into detected CLIs
+  --demo                  Init: create two sample tasks
+  --detect / --no-detect  Init: auto-fill agents from local CLIs (default: detect)
   --help, -h              Show this help message
 `
   );
@@ -102,6 +114,55 @@ export async function runCli(
   if (parsed.kind === "help") {
     printHelp(stdout, parsed.topic);
     return 0;
+  }
+
+  if (parsed.kind === "detect") {
+    const found = detectCodingClis({
+      path: env.PATH ?? "",
+      home: env.HOME || homedir(),
+      pathext: env.PATHEXT,
+    });
+    if (parsed.json) {
+      stdout.write(`${JSON.stringify({ schemaVersion: 1, ok: true, data: { clis: found } })}\n`);
+    } else if (found.length === 0) {
+      stdout.write("No known coding CLIs found on PATH or in home config dirs.\n");
+    } else {
+      stdout.write("Local CLIs (not a billing check; auth-file means a login file exists):\n");
+      for (const row of found) {
+        stdout.write(`  ${row.id.padEnd(8)} ${row.evidence.join(", ")}\n`);
+      }
+    }
+    return 0;
+  }
+
+  if (parsed.kind === "init") {
+    try {
+      const resolved = await resolveInitOptions(parsed, stdin, stdout, env.PWD || process.cwd(), env);
+      const result = await runInit(resolved, env);
+      if (parsed.json) {
+        stdout.write(`${JSON.stringify({ schemaVersion: 1, ok: true, data: result })}\n`);
+      } else {
+        stdout.write(`Project ${result.projectId}\nHome ${result.home}\n`);
+        stdout.write(`Agents ${result.agents.map((a) => `${a.id}:${a.role}`).join(", ")}\n`);
+        if (result.taskIds.length > 0) stdout.write(`Demo tasks ${result.taskIds.join(", ")}\n`);
+        if (result.filesWritten.length > 0) {
+          stdout.write("Wrote:\n");
+          for (const file of result.filesWritten) stdout.write(`  ${file}\n`);
+        }
+        stdout.write("Open each CLI in the git repo and ask what's next. Do not paste a plan.\n");
+      }
+      return 0;
+    } catch (err: unknown) {
+      if (err instanceof CliValidationError) {
+        return handleErrorOutput({ code: "VALIDATION", message: err.message }, parsed.json, stdout, stderr);
+      }
+      return handleErrorOutput(
+        { code: "INTERNAL", message: err instanceof Error ? err.message : "Init failed" },
+        parsed.json,
+        stdout,
+        stderr,
+      );
+    }
   }
 
   // 3. Handle Instructions Show
