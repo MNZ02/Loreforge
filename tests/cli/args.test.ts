@@ -74,6 +74,7 @@ describe("CLI Argument Parser (A16, A17)", () => {
       assert.equal(parsed.root, "/tmp/repo");
       assert.equal(parsed.name, "Demo");
       assert.equal(parsed.writeRules, true);
+      assert.equal(parsed.writeUserRules, false);
       assert.equal(parsed.demo, true);
       assert.equal(parsed.detect, true);
       assert.equal(parsed.json, true);

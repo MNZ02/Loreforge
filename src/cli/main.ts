@@ -31,7 +31,7 @@ Usage:
   lore inbox    --input <file|-> [--home <dir>] [--json]
   lore <namespace> <verb> --input <file|-> [--home <dir>] [--json]
   lore instructions show --project <uuid> --agent <agent-id> [--home <dir>]
-  lore init [--agent id[:role]]... [--root <git>] [--name <name>] [--write-rules] [--demo] [--detect|--no-detect] [--home <dir>] [--json]
+  lore init [--agent id[:role]]... [--root <git>] [--name <name>] [--write-rules] [--write-user-rules] [--demo] [--detect|--no-detect] [--home <dir>] [--json]
   lore detect [--json]
   lore --help
 
@@ -66,7 +66,8 @@ Options:
   --agent <id[:role]>     Agent id, optional :implement|:review|:both (repeatable on init)
   --root <dir>            Git repository root (init)
   --name <name>           Project display name (init)
-  --write-rules           Init: write always-on rules into detected CLIs
+  --write-rules           Init: write repo AGENTS.md / .grok/rules (not ~/.grok)
+  --write-user-rules      Init: also overwrite ~/.grok/rules and ~/.claude/rules
   --demo                  Init: create two sample tasks
   --detect / --no-detect  Init: auto-fill agents from local CLIs (default: detect)
   --help, -h              Show this help message

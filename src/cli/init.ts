@@ -17,6 +17,7 @@ export interface InitOptions {
   name?: string;
   agents: InitAgentSpec[];
   writeRules: boolean;
+  writeUserRules?: boolean;
   demo: boolean;
   json: boolean;
   detect?: boolean;
@@ -71,6 +72,28 @@ function roleGuidance(role: InitRole): string {
     "Your init role is **both**. Use `work` if you will edit, `review` if you will not.",
     "Any registered agent may claim any open task.",
   ].join("\n");
+}
+
+export function renderRepoRule(params: {
+  execPath: string;
+  homeDir: string;
+  projectId: string;
+  roster: InitAgentSpec[];
+}): string {
+  const roster = params.roster.map((a) => `- \`${a.id}\`: ${a.role}`).join("\n");
+  return `# Loreforge
+
+Shared log for this git repo. Do not start other models, create worktrees, merge, or deploy.
+
+- CLI: \`${params.execPath}\`
+- Home: \`${params.homeDir}\`
+- Project: \`${params.projectId}\`
+
+Register **this session's** agent id (any label on the roster) and this git root, then \`task list\` and \`inbox\`. Fetch \`context\` before editing (\`work\` if you will edit, \`review\` if not). Claim only to edit. Handoff with git evidence.
+
+Roster (labels, not locks; any registered agent may claim any open task):
+${roster}
+`;
 }
 
 export function renderInitRule(params: {
@@ -162,14 +185,16 @@ export async function resolveInitOptions(
           pathext: env.PATHEXT,
         });
   const detectedAgents = detectedToAgents(detected);
-  if (options.agents.length > 0) return { ...options, agents: options.agents };
-  if (!Boolean((stdin as NodeJS.ReadStream).isTTY)) {
-    if (detectedAgents.length === 0) {
+  const agents = options.agents.length > 0 ? options.agents : detectedAgents;
+  const tty = Boolean((stdin as NodeJS.ReadStream).isTTY);
+  const skipPrompt = options.json || Boolean(options.root);
+  if (skipPrompt || !tty) {
+    if (agents.length === 0) {
       throw new CliValidationError(
         "lore init found no local CLIs; pass --agent id[:role] (repeatable)",
       );
     }
-    return { ...options, agents: detectedAgents };
+    return { ...options, agents };
   }
   const root = await promptLine(stdin, stdout, "Git repo to register", options.root ?? cwd);
   const name = await promptLine(stdin, stdout, "Project name", options.name ?? basename(resolve(root)));
@@ -186,20 +211,20 @@ export async function resolveInitOptions(
     "Agents as id:role (role=implement|review|both), comma-separated",
     detectedDefault,
   );
-  const agents = agentLine
+  const chosen = agentLine
     .split(",")
     .map((part) => parseAgentSpec(part))
     .filter((a, i, all) => all.findIndex((b) => b.id === a.id) === i);
-  if (agents.length === 0) {
+  if (chosen.length === 0) {
     throw new CliValidationError("at least one agent is required");
   }
-  const writeRaw = await promptLine(stdin, stdout, "Write session rules into detected CLIs? (Y/n)", "Y");
+  const writeRaw = await promptLine(stdin, stdout, "Write session rules into this git repo? (Y/n)", "Y");
   const demoRaw = await promptLine(stdin, stdout, "Create two sample tasks? (Y/n)", "Y");
   return {
     ...options,
     root,
     name,
-    agents,
+    agents: chosen,
     writeRules: options.writeRules || /^y/i.test(writeRaw),
     demo: options.demo || /^y/i.test(demoRaw),
   };
@@ -303,36 +328,35 @@ export async function runInit(
     filesWritten.push(initPath);
 
     if (options.writeRules) {
-      const combined = options.agents
-        .map((agent) =>
-          renderInitRule({
-            execPath,
-            homeDir: home,
-            projectId: project.id,
-            agentId: agent.id,
-            role: agent.role,
-            roster: options.agents,
-          }),
-        )
-        .join("\n---\n\n");
+      const repoBody = renderRepoRule({
+        execPath,
+        homeDir: home,
+        projectId: project.id,
+        roster: options.agents,
+      });
 
       const repoRule = join(root, ".grok", "rules", "loreforge.md");
       mkdirSync(dirname(repoRule), { recursive: true });
-      writeFileSync(repoRule, combined, "utf8");
+      writeFileSync(repoRule, repoBody, "utf8");
       filesWritten.push(repoRule);
 
-      upsertMarkedSection(
-        join(root, "AGENTS.md"),
-        combined,
-      );
+      upsertMarkedSection(join(root, "AGENTS.md"), repoBody);
       filesWritten.push(join(root, "AGENTS.md"));
 
       const ids = new Set(options.agents.map((a) => a.id));
       if (ids.has("claude") || ids.has("anthropic")) {
-        upsertMarkedSection(join(root, "CLAUDE.md"), combined);
+        upsertMarkedSection(join(root, "CLAUDE.md"), repoBody);
         filesWritten.push(join(root, "CLAUDE.md"));
       }
+      if (ids.has("cursor")) {
+        const path = join(root, ".cursor", "rules", "loreforge.mdc");
+        mkdirSync(dirname(path), { recursive: true });
+        writeFileSync(path, repoBody, "utf8");
+        filesWritten.push(path);
+      }
+    }
 
+    if (options.writeUserRules) {
       for (const agent of options.agents) {
         const body = renderInitRule({
           execPath,
@@ -350,12 +374,6 @@ export async function runInit(
         }
         if (agent.id === "claude") {
           const path = join(userHome, ".claude", "rules", "loreforge.md");
-          mkdirSync(dirname(path), { recursive: true });
-          writeFileSync(path, body, "utf8");
-          filesWritten.push(path);
-        }
-        if (agent.id === "cursor") {
-          const path = join(root, ".cursor", "rules", "loreforge.mdc");
           mkdirSync(dirname(path), { recursive: true });
           writeFileSync(path, body, "utf8");
           filesWritten.push(path);

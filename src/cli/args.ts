@@ -55,6 +55,7 @@ export interface InitParsedArgs {
   name?: string;
   agents: InitAgentSpec[];
   writeRules: boolean;
+  writeUserRules: boolean;
   demo: boolean;
   detect: boolean;
   help: boolean;
@@ -174,6 +175,7 @@ export function parseCliArgs(args: string[]): ParsedArgs {
   let root: string | undefined;
   let name: string | undefined;
   let writeRules = false;
+  let writeUserRules = false;
   let demo = false;
   let detect = true;
 
@@ -241,6 +243,8 @@ export function parseCliArgs(args: string[]): ParsedArgs {
       if (!name) throw new CliValidationError("Empty value for --name");
     } else if (arg === "--write-rules") {
       writeRules = true;
+    } else if (arg === "--write-user-rules") {
+      writeUserRules = true;
     } else if (arg === "--demo") {
       demo = true;
     } else if (arg === "--detect") {
@@ -278,6 +282,7 @@ export function parseCliArgs(args: string[]): ParsedArgs {
       name,
       agents,
       writeRules,
+      writeUserRules,
       demo,
       detect,
       help: false,

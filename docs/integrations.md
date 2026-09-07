@@ -41,7 +41,7 @@ lore init --write-rules --demo
 
 With no `--agent`, init uses detected CLIs (role `both`). Override with `--agent id:role`. `--no-detect` disables scanning. This is not a subscription-plan API.
 
-1. Init registers the repo, the agent ids, optional sample tasks, and writes always-on rules (`.grok/rules`, `AGENTS.md` markers, Claude/Cursor if those ids were chosen).
+1. Init registers the repo, the agent ids, optional sample tasks, and writes **repo** rules (`.grok/rules`, `AGENTS.md` markers). `~/.grok/rules` is only changed with `--write-user-rules`.
 2. Open each CLI in that repo. Say only “what's next.”
 3. The implementer claims the first demo task; the reviewer waits, then `context` in review mode.
 
