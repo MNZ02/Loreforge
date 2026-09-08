@@ -1,0 +1,655 @@
+/* Loreforge landing page — L1: page and appearance.
+   Field-notebook direction: warm paper, near-black ink, restrained rust accent. */
+
+:root {
+  --page: #f5f2ea;
+  --surface: #fffdf7;
+  --text: #20221f;
+  --secondary: #55594f;
+  --accent: #9a391f;
+  --accent-ink: #7e2e18;
+  --border: #d8d4c8;
+  --muted: #ebe7dc;
+  --ink-band: #20221f;
+  --ink-band-text: #f5f2ea;
+  --ink-band-secondary: #cfcabb;
+  --max-width: 1160px;
+  --gutter: 48px;
+  --radius: 6px;
+  --radius-paper: 3px;
+  --font-heading: Georgia, "Times New Roman", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+
+p {
+  margin: 0 0 16px;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  z-index: 100;
+  background: var(--ink-band);
+  color: var(--ink-band-text);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: top 0.15s ease-in;
+}
+
+.skip-link:focus-visible {
+  top: 12px;
+  outline-color: var(--ink-band-text);
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.reading {
+  max-width: 760px;
+}
+
+/* Header: 76px tall, wordmark left, links right, thin bottom rule. */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--page);
+}
+
+.header-inner {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.wordmark {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.nav-list a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.nav-list a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Hero: 54% text / 46% example on desktop, vertically centered. */
+.hero {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 54% 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+
+.hero h1 {
+  font-size: clamp(42px, 5.2vw, 72px);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  margin: 0 0 24px;
+}
+
+.lede {
+  font-size: 19px;
+  max-width: 34em;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #fffdf7;
+}
+
+.button-primary:hover {
+  background: var(--accent-ink);
+  color: #fffdf7;
+}
+
+.button-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.button-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.support-line {
+  font-size: 15px;
+  color: var(--secondary);
+  margin-bottom: 0;
+}
+
+/* Hero example: two offset paper records, illustrative only. */
+.hero-example {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
+  padding: 24px;
+}
+
+.example-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin: 0 0 16px;
+}
+
+.papers {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  color: var(--secondary);
+}
+
+.record {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-paper);
+  box-shadow: 0 2px 8px rgba(32, 34, 31, 0.12);
+  padding: 16px 20px;
+  margin: 0;
+}
+
+.record-rear {
+  transform: rotate(1deg);
+  opacity: 0.92;
+  margin-bottom: -8px;
+}
+
+.record-front {
+  box-shadow: 0 6px 20px rgba(32, 34, 31, 0.16);
+}
+
+.papers-connector {
+  align-self: center;
+  height: 56px;
+  margin: 4px 0;
+}
+
+.record-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.record-quote {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.record-meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--secondary);
+  margin: 0;
+}
+
+/* Editorial: full-width section, narrow reading column. */
+.editorial {
+  padding-top: 80px;
+  padding-bottom: 80px;
+  border-top: 1px solid var(--border);
+}
+
+.editorial h2 {
+  font-size: clamp(30px, 3.4vw, 44px);
+  line-height: 1.1;
+}
+
+.editorial p:last-child {
+  margin-bottom: 0;
+}
+
+/* Workflow: ruled strip with three numbered steps. */
+.workflow {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.workflow h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.12;
+  margin-bottom: 48px;
+  max-width: 20em;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.step {
+  border-top: 2px solid var(--text);
+  padding-top: 16px;
+}
+
+.step-number {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+.step-title {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.step p:last-child {
+  margin-bottom: 0;
+  color: var(--secondary);
+}
+
+/* Scope: two labeled columns, ordinary lists. */
+.scope {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.scope h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  margin-bottom: 32px;
+}
+
+.scope-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 24px;
+}
+
+.scope-column h3 {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin: 0 0 12px;
+}
+
+.scope-column ul {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.scope-column li {
+  margin-bottom: 8px;
+}
+
+.scope-column li::marker {
+  color: var(--accent);
+}
+
+.footnote {
+  font-size: 15px;
+  color: var(--secondary);
+  border-left: 3px solid var(--border);
+  padding-left: 16px;
+  margin-bottom: 0;
+  max-width: 60em;
+}
+
+/* Install: wide ink band with light text and one command box. */
+.install {
+  background: var(--ink-band);
+  color: var(--ink-band-text);
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.install h2 {
+  font-size: clamp(28px, 3vw, 40px);
+  margin-bottom: 24px;
+}
+
+.command-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  background: #31332e;
+  border: 1px solid #4a4d45;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.command-box code {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: #fffdf7;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  user-select: all;
+}
+
+.command-box button {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--ink-band-secondary);
+  background: transparent;
+  color: var(--ink-band-text);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.command-box button:hover {
+  border-color: #fffdf7;
+}
+
+.install :focus-visible {
+  outline-color: #f5f2ea;
+}
+
+#copy-status {
+  min-height: 1.6em;
+  font-size: 15px;
+  color: var(--ink-band-secondary);
+  margin-bottom: 16px;
+}
+
+#copy-status:empty {
+  display: block;
+}
+
+.requirement {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-band-secondary);
+}
+
+.install-link {
+  color: #f0c9b8;
+  font-weight: 600;
+}
+
+.install-link:hover {
+  color: #fffdf7;
+}
+
+.install p:last-child {
+  margin-bottom: 0;
+}
+
+/* FAQ: narrow reading width, expanding rows with dividing rules. */
+.faq {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.faq details {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+}
+
+.faq details:last-of-type {
+  border-bottom: 1px solid var(--border);
+}
+
+.faq summary {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  cursor: pointer;
+  list-style-position: outside;
+  padding-left: 4px;
+}
+
+.faq details p {
+  margin: 12px 0 4px;
+  color: var(--secondary);
+  max-width: 60em;
+}
+
+/* Footer: quiet links and product line. */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 56px;
+  padding-bottom: 56px;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footer-inner p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--secondary);
+}
+
+.footer-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.footer-links a {
+  font-size: 15px;
+}
+
+/* Tablet 640–959px: one-column hero, capped example width. */
+@media (max-width: 959px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-example {
+    max-width: 620px;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Mobile <640px: wrapped header, stacked papers, stacked scope. */
+@media (max-width: 639px) {
+  :root {
+    --gutter: 20px;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .nav-list {
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  .hero {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+
+  .record-rear {
+    transform: none;
+    margin-bottom: 16px;
+  }
+
+  .papers-connector {
+    display: none;
+  }
+
+  .button {
+    flex: 1 1 100%;
+  }
+
+  .scope-columns {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .editorial,
+  .workflow,
+  .scope,
+  .install,
+  .faq {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+}
+
+/* Tablet gutters 32px between mobile and desktop. */
+@media (min-width: 640px) and (max-width: 959px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition: none;
+    animation: none;
+  }
+}

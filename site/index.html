@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loreforge — Shared context for independent agents</title>
+  <meta name="description" content="Loreforge keeps a shared record of findings, decisions, and handoffs so independent coding agents can pick up where another session left off.">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="wordmark" href="#top">Loreforge</a>
+      <nav aria-label="Primary">
+        <ul class="nav-list">
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#alpha-scope">Alpha scope</a></li>
+          <li><a href="https://github.com/MNZ02/Loreforge">GitHub</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <p class="eyebrow">OPEN SOURCE · EARLY ALPHA</p>
+          <h1 id="page-title">Give your next agent a head start.</h1>
+          <p class="lede">Loreforge keeps a shared record of findings, decisions, and handoffs so independent coding agents can pick up where another session left off.</p>
+          <p class="cta-row">
+            <a class="button button-primary" href="#install">Try the alpha</a>
+            <a class="button button-secondary" href="https://github.com/MNZ02/Loreforge">View on GitHub</a>
+          </p>
+          <p class="support-line">Local SQLite storage. Explicit CLI commands. Your agents stay independent.</p>
+        </div>
+        <figure class="hero-example" aria-label="Illustrative example of a shared handoff between two agent sessions">
+          <p class="example-label" aria-hidden="true">Illustrative handoff</p>
+          <div class="papers">
+            <article class="record record-rear" aria-hidden="true">
+              <p class="record-kicker">Session A · Finding</p>
+              <p class="record-quote">“Retrying after a partial write can leave access missing.”</p>
+              <p class="record-meta">Evidence: grant-user-plan.ts · regression test.</p>
+            </article>
+            <svg class="papers-connector" width="40" height="72" viewBox="0 0 40 72" aria-hidden="true" focusable="false">
+              <line x1="20" y1="4" x2="20" y2="56" stroke="currentColor" stroke-width="2"></line>
+              <polyline points="12,48 20,58 28,48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            </svg>
+            <article class="record record-front">
+              <p class="record-kicker">Session B · Context received</p>
+              <p class="record-quote">“Check the existing recovery fix before changing the retry path.”</p>
+              <p class="record-meta">Verify against the current commit.</p>
+            </article>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <section class="editorial" aria-labelledby="editorial-heading">
+      <div class="container reading">
+        <h2 id="editorial-heading">A useful finding should outlive the chat.</h2>
+        <p>An investigation can end with a fix, a failed attempt, or a decision worth remembering. Preserve the reason and the evidence so the next session has a starting point it can verify.</p>
+      </div>
+    </section>
+
+    <section class="workflow" id="how-it-works" aria-labelledby="workflow-heading" tabindex="-1">
+      <div class="container">
+        <h2 id="workflow-heading">Leave evidence. Pick up context. Keep working.</h2>
+        <ol class="steps">
+          <li class="step">
+            <p class="step-number" aria-hidden="true">01</p>
+            <h3 class="step-title">Record the finding</h3>
+            <p>Save what changed, why it matters, and the files or checks that support it in a task handoff.</p>
+          </li>
+          <li class="step">
+            <p class="step-number" aria-hidden="true">02</p>
+            <h3 class="step-title">Retrieve the context</h3>
+            <p>Another session reads that task and its linked handoffs.</p>
+          </li>
+          <li class="step">
+            <p class="step-number" aria-hidden="true">03</p>
+            <h3 class="step-title">Verify and continue</h3>
+            <p>Check the evidence against the current code, then carry the work forward and leave the next handoff.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="scope" id="alpha-scope" aria-labelledby="scope-heading" tabindex="-1">
+      <div class="container">
+        <h2 id="scope-heading">Small by design.</h2>
+        <div class="scope-columns">
+          <div class="scope-column">
+            <h3>Available in the alpha</h3>
+            <ul>
+              <li>Task-linked handoffs</li>
+              <li>Questions and answers</li>
+              <li>Decisions with file references</li>
+              <li>Git evidence</li>
+              <li>Local storage</li>
+            </ul>
+          </div>
+          <div class="scope-column">
+            <h3>Next milestone</h3>
+            <ul>
+              <li>Searchable standalone notes</li>
+              <li>Corrections linked to older findings</li>
+              <li>Relevant results without knowing an earlier task ID</li>
+            </ul>
+          </div>
+        </div>
+        <p class="footnote">These upcoming features are being implemented. They are not included in the published alpha.</p>
+      </div>
+    </section>
+
+    <section class="install" id="install" aria-labelledby="install-heading" tabindex="-1">
+      <div class="container">
+        <h2 id="install-heading">Start with one project.</h2>
+        <div class="command-box">
+          <code id="install-command">npm install -g loreforge@alpha</code>
+          <button id="copy-install" type="button" hidden>Copy command</button>
+        </div>
+        <p id="copy-status" role="status" aria-live="polite"></p>
+        <p class="requirement">Requires Node.js 24.15+ and Git.</p>
+        <p>Follow the setup guide to register your project and add instructions to your agent sessions. The alpha currently needs a separate state home for each project.</p>
+        <p><a class="install-link" href="https://github.com/MNZ02/Loreforge/blob/main/docs/usage.md">Read the setup guide →</a></p>
+      </div>
+    </section>
+
+    <section class="faq" aria-label="Frequently asked questions">
+      <div class="container reading">
+        <details>
+          <summary>Does it run my agents?</summary>
+          <p>No. You start your CLI sessions. Loreforge stores and retrieves the context they explicitly record.</p>
+        </details>
+        <details>
+          <summary>Does it work across providers?</summary>
+          <p>Agents can use the same CLI and local state home. Each session must be instructed to read and write records; there is no automatic integration with every provider.</p>
+        </details>
+        <details>
+          <summary>Does it reduce token usage?</summary>
+          <p>It may reduce repeated investigation, but total token savings have not been measured. Writing and retrieving context also consumes tokens.</p>
+        </details>
+        <details>
+          <summary>Where is my data stored?</summary>
+          <p>In a local SQLite database in the configured state directory. An agent can send retrieved content to its model provider as context.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>Loreforge · Shared context for independent agents.</p>
+      <ul class="footer-links">
+        <li><a href="https://github.com/MNZ02/Loreforge">GitHub</a></li>
+        <li><a href="https://www.npmjs.com/package/loreforge">npm</a></li>
+        <li><a href="https://github.com/MNZ02/Loreforge/blob/main/LICENSE">MIT license</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
