@@ -1,168 +1,155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Loreforge — Shared context for independent agents</title>
-  <meta name="description" content="Loreforge keeps a shared record of findings, decisions, and handoffs so independent coding agents can pick up where another session left off.">
+  <meta name="theme-color" content="#f7f6f2">
+  <title>Loreforge — New session. Same momentum.</title>
+  <meta name="description" content="Shared memory for independent coding agents. Keep findings, decisions, and Git evidence in a local record that the next session can pick up and verify.">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Skip to content</a>
-
   <header class="site-header">
     <div class="container header-inner">
-      <a class="wordmark" href="#top">Loreforge</a>
-      <nav aria-label="Primary">
-        <ul class="nav-list">
-          <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#alpha-scope">Alpha scope</a></li>
-          <li><a href="https://github.com/MNZ02/Loreforge">GitHub</a></li>
-        </ul>
+      <a class="wordmark" href="#top" aria-label="Loreforge home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>loreforge<span class="wordmark-period">.</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#workflow">The workflow</a>
+        <a href="#capabilities">What it keeps</a>
+        <a class="nav-cta" href="#install">Get started <span aria-hidden="true">↗</span></a>
       </nav>
     </div>
   </header>
 
   <main id="main">
-    <section class="hero" aria-labelledby="page-title">
-      <div class="container hero-inner">
-        <div class="hero-text">
-          <p class="eyebrow">OPEN SOURCE · EARLY ALPHA</p>
-          <h1 id="page-title">Give your next agent a head start.</h1>
-          <p class="lede">Loreforge keeps a shared record of findings, decisions, and handoffs so independent coding agents can pick up where another session left off.</p>
-          <p class="cta-row">
-            <a class="button button-primary" href="#install">Try the alpha</a>
-            <a class="button button-secondary" href="https://github.com/MNZ02/Loreforge">View on GitHub</a>
-          </p>
-          <p class="support-line">Local SQLite storage. Explicit CLI commands. Your agents stay independent.</p>
+    <section class="hero container" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> SHARED MEMORY. INDEPENDENT AGENTS.</p>
+        <h1 id="page-title">New session.<br><em>Same momentum.</em></h1>
+        <p class="hero-description">Good findings deserve a longer life than a chat window. Give your next coding agent the context, decisions, and evidence to keep going.</p>
+        <div class="hero-actions">
+          <a class="button button-dark" href="#install">Start a shared record <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="#workflow">See how it works <span aria-hidden="true">↓</span></a>
         </div>
-        <figure class="hero-example" aria-label="Illustrative example of a shared handoff between two agent sessions">
-          <p class="example-label" aria-hidden="true">Illustrative handoff</p>
-          <div class="papers">
-            <article class="record record-rear" aria-hidden="true">
-              <p class="record-kicker">Session A · Finding</p>
-              <p class="record-quote">“Retrying after a partial write can leave access missing.”</p>
-              <p class="record-meta">Evidence: grant-user-plan.ts · regression test.</p>
-            </article>
-            <svg class="papers-connector" width="40" height="72" viewBox="0 0 40 72" aria-hidden="true" focusable="false">
-              <line x1="20" y1="4" x2="20" y2="56" stroke="currentColor" stroke-width="2"></line>
-              <polyline points="12,48 20,58 28,48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
-            </svg>
-            <article class="record record-front">
-              <p class="record-kicker">Session B · Context received</p>
-              <p class="record-quote">“Check the existing recovery fix before changing the retry path.”</p>
-              <p class="record-meta">Verify against the current commit.</p>
-            </article>
-          </div>
-        </figure>
+        <div class="hero-footnote"><span class="tiny-terminal" aria-hidden="true">&gt;_</span><span>A small CLI. A local database. A continuous thread.</span></div>
       </div>
-    </section>
 
-    <section class="editorial" aria-labelledby="editorial-heading">
-      <div class="container reading">
-        <h2 id="editorial-heading">A useful finding should outlive the chat.</h2>
-        <p>An investigation can end with a fix, a failed attempt, or a decision worth remembering. Preserve the reason and the evidence so the next session has a starting point it can verify.</p>
-      </div>
-    </section>
-
-    <section class="workflow" id="how-it-works" aria-labelledby="workflow-heading" tabindex="-1">
-      <div class="container">
-        <h2 id="workflow-heading">Leave evidence. Pick up context. Keep working.</h2>
-        <ol class="steps">
-          <li class="step">
-            <p class="step-number" aria-hidden="true">01</p>
-            <h3 class="step-title">Record the finding</h3>
-            <p>Save what changed, why it matters, and the files or checks that support it in a task handoff.</p>
-          </li>
-          <li class="step">
-            <p class="step-number" aria-hidden="true">02</p>
-            <h3 class="step-title">Retrieve the context</h3>
-            <p>Another session reads that task and its linked handoffs.</p>
-          </li>
-          <li class="step">
-            <p class="step-number" aria-hidden="true">03</p>
-            <h3 class="step-title">Verify and continue</h3>
-            <p>Check the evidence against the current code, then carry the work forward and leave the next handoff.</p>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="scope" id="alpha-scope" aria-labelledby="scope-heading" tabindex="-1">
-      <div class="container">
-        <h2 id="scope-heading">Small by design.</h2>
-        <div class="scope-columns">
-          <div class="scope-column">
-            <h3>Available in the alpha</h3>
-            <ul>
-              <li>Task-linked handoffs</li>
-              <li>Questions and answers</li>
-              <li>Decisions with file references</li>
-              <li>Git evidence</li>
-              <li>Local storage</li>
-            </ul>
-          </div>
-          <div class="scope-column">
-            <h3>Next milestone</h3>
-            <ul>
-              <li>Searchable standalone notes</li>
-              <li>Corrections linked to older findings</li>
-              <li>Relevant results without knowing an earlier task ID</li>
-            </ul>
-          </div>
+      <figure class="memory-map" aria-labelledby="map-caption">
+        <figcaption id="map-caption"><span>THE CONTEXT CARRIES FORWARD</span><span>FIG. 01</span></figcaption>
+        <div class="map-grid">
+          <svg class="map-paths" viewBox="0 0 500 410" preserveAspectRatio="none" aria-hidden="true"><path class="path-base" d="M112 88 H250 V311 H383"/><path class="path-accent" d="M112 88 H250 V200"/><circle cx="250" cy="88" r="4"/><circle cx="250" cy="311" r="4"/></svg>
+          <article class="map-record record-investigate">
+            <div class="record-heading"><span class="session-icon" aria-hidden="true">↳</span><span>SESSION 01</span><span class="record-tag">Investigate</span></div>
+            <p>“A retry can leave<br>the grant unfinished.”</p>
+            <div class="record-evidence"><span aria-hidden="true">↳</span> finding + evidence</div>
+          </article>
+          <div class="memory-core"><span class="core-glow" aria-hidden="true"></span><span class="core-icon brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><div><strong>loreforge</strong><span>THE SHARED RECORD</span></div><span class="core-count" aria-hidden="true">⌁</span></div>
+          <article class="map-record record-continue">
+            <div class="record-heading"><span class="session-icon" aria-hidden="true">↗</span><span>SESSION 02</span><span class="record-tag">Continue</span></div>
+            <p>“Check the recovery fix<br>before changing the retry.”</p>
+            <div class="record-evidence"><span class="evidence-dot" aria-hidden="true"></span> context worth verifying</div>
+          </article>
+          <span class="map-axis axis-top" aria-hidden="true">+</span><span class="map-axis axis-bottom" aria-hidden="true">+</span>
         </div>
-        <p class="footnote">These upcoming features are being implemented. They are not included in the published alpha.</p>
-      </div>
+        <div class="map-footer"><span><span class="status-dot" aria-hidden="true"></span> SAVED LOCALLY</span><span>Illustrative workflow</span></div>
+      </figure>
     </section>
 
-    <section class="install" id="install" aria-labelledby="install-heading" tabindex="-1">
-      <div class="container">
-        <h2 id="install-heading">Start with one project.</h2>
-        <div class="command-box">
-          <code id="install-command">npm install -g loreforge@alpha</code>
-          <button id="copy-install" type="button" hidden>Copy command</button>
+    <section class="tools-strip container" aria-label="Independent CLI sessions">
+      <p>YOUR TOOLS.<br><strong>ONE CONTINUOUS THREAD.</strong></p>
+      <div class="tool-names"><span>Codex</span><span>Claude</span><span>Gemini</span><span>Grok</span><span class="your-cli">&gt;_ Your CLI</span></div>
+      <p class="tools-note">Connected by explicit commands,<br>not a new way of running agents.</p>
+    </section>
+
+    <section class="workflow section container" id="workflow" aria-labelledby="workflow-title">
+      <div class="section-heading"><div><p class="eyebrow section-number">01 / A BETTER HANDOFF</p><h2 id="workflow-title">Let the useful part<br><em>outlive the chat.</em></h2></div><p>The next session needs more than “it’s done.”<br>Leave the finding, the reason, and the evidence.<br>Then let another agent pick up the thread.</p></div>
+      <div class="workbench">
+        <div class="workbench-toolbar"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span>loreforge / shared-context</span><span class="demo-badge">0.2 ALPHA</span></div>
+        <div class="demo-controls" data-stage-controls role="tablist" aria-label="Example workflow" hidden>
+          <button id="tab-record" role="tab" aria-controls="panel-record" aria-selected="true" data-stage="record"><span>01</span> Record a finding <span class="tab-arrow" aria-hidden="true">↗</span></button>
+          <button id="tab-retrieve" role="tab" aria-controls="panel-retrieve" aria-selected="false" tabindex="-1" data-stage="retrieve"><span>02</span> Find the context <span class="tab-arrow" aria-hidden="true">↗</span></button>
+          <button id="tab-review" role="tab" aria-controls="panel-review" aria-selected="false" tabindex="-1" data-stage="review"><span>03</span> Leave a review <span class="tab-arrow" aria-hidden="true">↗</span></button>
         </div>
-        <p id="copy-status" role="status" aria-live="polite"></p>
-        <p class="requirement">Requires Node.js 24.15+ and Git.</p>
-        <p>Follow the setup guide to register your project and add instructions to your agent sessions. The alpha currently needs a separate state home for each project.</p>
-        <p><a class="install-link" href="https://github.com/MNZ02/Loreforge/blob/main/docs/usage.md">Read the setup guide →</a></p>
+        <div class="demo-panel" id="panel-record" data-panel="record">
+          <div class="terminal"><p class="terminal-label">01 / RECORD</p><pre><code><span class="prompt">$</span> lore note add --input finding.json
+
+<span class="terminal-muted"># Keep the reasoning close to the work.</span>
+<span class="terminal-key">finding</span>    Retry can leave a grant unfinished.
+<span class="terminal-key">reason</span>     The claim was recorded before the grant.
+<span class="terminal-key">evidence</span>   src/payments/grant.ts
+<span class="terminal-key">status</span>     proposed
+
+<span class="terminal-success">✓ Finding recorded.</span></code></pre><p class="terminal-caption">Example input and response excerpt</p></div>
+          <aside class="demo-explainer"><span class="demo-symbol" aria-hidden="true">↳</span><p class="eyebrow">SAVE THE WHY</p><h3>A starting point.<br>With something to check.</h3><p>Keep a standalone finding with its reason and file references. No task or editing claim required.</p><div class="record-reference"><span class="reference-icon" aria-hidden="true">≡</span><div><strong>Retry recovery finding</strong><span>Note · Proposed · Evidence attached</span></div></div></aside>
+        </div>
+        <div class="demo-panel" id="panel-retrieve" data-panel="retrieve">
+          <div class="terminal"><p class="terminal-label">02 / RETRIEVE</p><pre><code><span class="prompt">$</span> lore search --query "retry grant" \
+    --files src/payments
+
+<span class="terminal-muted"># Find the earlier work without its task ID.</span>
+<span class="terminal-key">note</span>       Retry recovery finding
+<span class="terminal-key">finding</span>    Retry can leave a grant unfinished.
+<span class="terminal-key">path</span>       src/payments/grant.ts
+<span class="terminal-key">revision</span>   current
+
+<span class="terminal-success">↳ Read the full record with lore note get.</span></code></pre><p class="terminal-caption">Example query and result excerpt</p></div>
+          <aside class="demo-explainer"><span class="demo-symbol" aria-hidden="true">⌕</span><p class="eyebrow">PICK UP THE THREAD</p><h3>Find the context.<br>Skip the retelling.</h3><p>Search notes, handoffs, tasks, and decisions in the current project. Check the evidence against today’s code.</p><div class="record-reference"><span class="reference-icon" aria-hidden="true">≡</span><div><strong>The earlier finding, retrieved</strong><span>Project-scoped · Current revision</span></div></div></aside>
+        </div>
+        <div class="demo-panel" id="panel-review" data-panel="review">
+          <div class="terminal"><p class="terminal-label">03 / REVIEW</p><pre><code><span class="prompt">$</span> lore review record --input review.json
+
+<span class="terminal-muted"># Tie the review to what was handed off.</span>
+<span class="terminal-key">handoff</span>    Retry recovery implementation
+<span class="terminal-key">commit</span>     The handoff’s observed commit
+<span class="terminal-key">outcome</span>    changes_requested
+<span class="terminal-key">body</span>       Add a regression for partial writes.
+
+<span class="terminal-success">✓ Review recorded. History preserved.</span></code></pre><p class="terminal-caption">Example input and response excerpt</p></div>
+          <aside class="demo-explainer"><span class="demo-symbol" aria-hidden="true">✓</span><p class="eyebrow">CLOSE THE LOOP</p><h3>Make the review<br>part of the record.</h3><p>Leave an approval or a request for changes, tied to the handoff and commit. A review can stand on its own without an editing claim.</p><div class="record-reference"><span class="reference-icon" aria-hidden="true">≡</span><div><strong>Partial-write regression requested</strong><span>Review · Linked to handoff</span></div></div></aside>
+        </div>
+        <div class="workbench-footer"><span><span class="status-dot" aria-hidden="true"></span> YOUR MACHINE. YOUR RECORDS.</span><span>Interactive example · no commands are executed</span></div>
       </div>
     </section>
 
-    <section class="faq" aria-label="Frequently asked questions">
-      <div class="container reading">
-        <details>
-          <summary>Does it run my agents?</summary>
-          <p>No. You start your CLI sessions. Loreforge stores and retrieves the context they explicitly record.</p>
-        </details>
-        <details>
-          <summary>Does it work across providers?</summary>
-          <p>Agents can use the same CLI and local state home. Each session must be instructed to read and write records; there is no automatic integration with every provider.</p>
-        </details>
-        <details>
-          <summary>Does it reduce token usage?</summary>
-          <p>It may reduce repeated investigation, but total token savings have not been measured. Writing and retrieving context also consumes tokens.</p>
-        </details>
-        <details>
-          <summary>Where is my data stored?</summary>
-          <p>In a local SQLite database in the configured state directory. An agent can send retrieved content to its model provider as context.</p>
-        </details>
+    <section class="capabilities section container" id="capabilities" aria-labelledby="capabilities-title">
+      <div class="section-heading"><div><p class="eyebrow section-number">02 / BUILT TO REMEMBER</p><h2 id="capabilities-title">A shared log.<br><em>With receipts.</em></h2></div><div class="scope-note"><span class="preview-label">IN THE 0.2 ALPHA</span><p>Small, explicit tools for keeping useful work.<br>Your agents remain independent.</p></div></div>
+      <div class="capability-layout">
+        <article class="feature-focus"><div class="focus-top"><span class="outline-icon" aria-hidden="true">⌕</span><span class="eyebrow">CONTEXT YOU CAN FIND AGAIN</span></div><h3>Keep the knowledge.<br>Keep the evidence.</h3><p>Search across findings, decisions, tasks, and handoffs. Follow a correction back to the original, and see which commit the evidence came from.</p><div class="mini-record"><div><span class="file-dot" aria-hidden="true"></span><code>retry-recovery</code><span class="mini-badge">CURRENT</span></div><p>Use the recovery path after a partial write.</p><div class="revision-line"><span aria-hidden="true">↳</span> correction linked to the earlier finding</div></div><div class="focus-bottom"><span>Originals preserved.</span><span>Context kept in reach. <span aria-hidden="true">↗</span></span></div></article>
+        <div class="feature-list">
+          <article><span class="feature-number">01</span><div><h3>Clear ownership</h3><p>Claim work with a lease. Discover expired claims and see which dependencies are holding a task back.</p></div><span class="feature-glyph" aria-hidden="true">↗</span></article>
+          <article><span class="feature-number">02</span><div><h3>Evidence that travels</h3><p>Handoffs carry Git observations, file references, and reported checks. Reviews stay tied to a specific commit.</p></div><span class="feature-glyph" aria-hidden="true">⊞</span></article>
+          <article><span class="feature-number">03</span><div><h3>At home in your tools</h3><p>Use the CLI directly, or connect an MCP-capable client to the same core operations over stdio.</p></div><span class="feature-glyph" aria-hidden="true">&gt;_</span></article>
+          <article><span class="feature-number">04</span><div><h3>Local. And portable.</h3><p>SQLite on your machine. Back up the database, restore into a new home, or export records as JSON and Markdown.</p></div><span class="feature-glyph" aria-hidden="true">↓</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="install" id="install" aria-labelledby="install-title">
+      <div class="container install-inner">
+        <div class="install-copy"><p class="eyebrow section-number">03 / START SMALL</p><h2 id="install-title">One project.<br>One shared record.<br><em>A better next session.</em></h2><p>Install the published alpha and give your agents a place to leave what they learned.</p><a class="light-link" href="https://www.npmjs.com/package/loreforge">View the package on npm <span aria-hidden="true">↗</span></a></div>
+        <div class="setup"><div class="setup-top"><span class="eyebrow">QUICK START</span><span class="version-label">ALPHA 0.2.0</span></div><ol class="setup-steps">
+          <li><div class="step-heading"><span>01</span><h3>Install Loreforge</h3></div><div class="command-box"><code id="install-command">npm install -g loreforge@alpha</code><button class="copy-button" type="button" data-copy="install-command" aria-label="Copy install command" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="6" width="9" height="11" rx="1.5"/><path d="M12 6V3H3v11h4"/></svg></button></div></li>
+          <li><div class="step-heading"><span>02</span><h3>Initialize your Git repository</h3></div><div class="command-box command-multiline"><code id="init-command">export LOREFORGE_HOME="$PWD/.loreforge-state"
+lore init --agent codex:both --write-rules</code><button class="copy-button" type="button" data-copy="init-command" aria-label="Copy initialization commands" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="6" width="9" height="11" rx="1.5"/><path d="M12 6V3H3v11h4"/></svg></button></div></li>
+          <li><div class="step-heading"><span>03</span><h3>Open your agent and keep going</h3></div><p>Use your session’s agent label. The rules guide it to read context and record its work.</p></li>
+        </ol><p id="copy-status" class="copy-status" role="status" aria-live="polite"></p><div class="setup-requirements"><span>Node.js 24.15+ &amp; Git</span><span>Local state · No hosted account</span></div><p class="setup-note">Run initialization from your Git repository. Keep <code>.loreforge-state/</code> out of version control. Use the same state home for sessions that share this project.</p></div>
+      </div>
+      <div class="container release-note"><span class="release-dot" aria-hidden="true"></span><p><strong>Search, reviews, and MCP are included.</strong> The npm alpha installs <strong>0.2.0-alpha.1</strong>, with the workflow shown above.</p><a href="#preview-setup">Install from source <span aria-hidden="true">↓</span></a></div>
+    </section>
+
+    <section class="faq section container" aria-labelledby="faq-title">
+      <div><p class="eyebrow section-number">A FEW THINGS TO KNOW</p><h2 id="faq-title">Simple by<br><em>design.</em></h2></div>
+      <div class="faq-items">
+        <details><summary>Does Loreforge run my agents?<span aria-hidden="true">+</span></summary><p>You start your CLI sessions. Loreforge stores the work they explicitly record. It does not launch models, schedule jobs, or create and merge worktrees.</p></details>
+        <details><summary>How do different agents share context?<span aria-hidden="true">+</span></summary><p>Point their sessions at the same project and local state home, then add the session instructions to each client. Each agent calls the CLI explicitly. MCP clients can use the same operations as tools. Rule loading still depends on your client’s setup.</p></details>
+        <details><summary>Where does the information go?<span aria-hidden="true">+</span></summary><p>Records live in a local SQLite database. When an agent reads a record, it may send that content to its model provider as context. A Git observation records what was seen; it does not back up uncommitted files.</p></details>
+        <details><summary>Does it save tokens?<span aria-hidden="true">+</span></summary><p>It can give a session a useful starting point instead of another investigation. Total token savings have not been measured, and recording and retrieving context also consumes tokens.</p></details>
+        <details id="preview-setup"><summary>Can I install from a local checkout?<span aria-hidden="true">+</span></summary><p>If you already have the Loreforge checkout, run these commands from its root. This builds and installs your local package. Use the npm command above for the published alpha.</p><div class="preview-command"><code id="preview-command">npm install &amp;&amp; npm run build &amp;&amp; npm install -g .</code><button class="copy-button" type="button" data-copy="preview-command" aria-label="Copy local source installation command" hidden>Copy</button></div><p>Then run <code>lore init</code> in your project. Use <code>lore doctor</code> to check your setup. Search, correction history, reviews, MCP, and backup/restore/export are available in 0.2. Nothing is published by these commands.</p></details>
       </div>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p>Loreforge · Shared context for independent agents.</p>
-      <ul class="footer-links">
-        <li><a href="https://github.com/MNZ02/Loreforge">GitHub</a></li>
-        <li><a href="https://www.npmjs.com/package/loreforge">npm</a></li>
-        <li><a href="https://github.com/MNZ02/Loreforge/blob/main/LICENSE">MIT license</a></li>
-      </ul>
-    </div>
-  </footer>
-
+  <footer class="site-footer container"><a class="wordmark" href="#top"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>loreforge<span class="wordmark-period">.</span></a><p>Good work should leave a trail.</p><div><a href="https://www.npmjs.com/package/loreforge">npm <span aria-hidden="true">↗</span></a><a href="#top">Back to top <span aria-hidden="true">↑</span></a></div></footer>
   <script type="module" src="./main.js"></script>
 </body>
 </html>

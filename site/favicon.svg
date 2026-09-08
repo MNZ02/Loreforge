@@ -1,7 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Loreforge mark">
-  <rect x="4" y="4" width="56" height="56" rx="6" fill="#20221F"/>
-  <rect x="14" y="12" width="36" height="40" rx="3" fill="#F5F2EA"/>
-  <line x1="20" y1="22" x2="44" y2="22" stroke="#9A391F" stroke-width="3" stroke-linecap="round"/>
-  <line x1="20" y1="31" x2="44" y2="31" stroke="#55594F" stroke-width="2.5" stroke-linecap="round"/>
-  <line x1="20" y1="39" x2="38" y2="39" stroke="#55594F" stroke-width="2.5" stroke-linecap="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#252a25"/><g fill="#e8ac4d" transform="translate(15 17) skewY(-12)"><path d="M0 0h34v7H0zM0 13h24v7H0zM0 26h14v7H0z"/></g></svg>
