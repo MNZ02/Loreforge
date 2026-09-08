@@ -13,6 +13,8 @@
 - **Handoff**: A structured record of work done or blockers encountered, including agent-reported file changes, test checks, and git evidence.
 - **Inbox**: Ordered, monotonic event stream of questions and answers directed to an agent.
 - **Decisions**: Immutable architectural decisions scoped to a project and optional file paths.
+- **Notes**: Standalone project-scoped findings. They do not require a task or claim. Corrections are new notes that supersede a current note or handoff. `verified` is the author's assertion, not a Loreforge proof.
+- **Search**: Project-scoped SQLite FTS5 lookup over current notes and existing task handoffs. Default search hides superseded items; history remains via `note get` and `--include-superseded`.
 - **Context Snapshot**: Bounded, deterministic state representation tailored for either implementation (`work` mode) or review (`review` mode).
 
 ## Explicit Boundaries & Limitations
@@ -34,6 +36,7 @@ lore context  --input <file|-> [--home <directory>] [--json]
 lore handoff  --input <file|-> [--home <directory>] [--json]
 lore ask      --input <file|-> [--home <directory>] [--json]
 lore inbox    --input <file|-> [--home <directory>] [--json]
+lore search   --query "..." [--files path,path] [--limit 5] --project <uuid> [--home <directory>] [--json]
 ```
 
 Full operations still use namespace + verb (`lore task claim`, `lore question answer`, …):
@@ -352,7 +355,56 @@ lore decision record --input - <<'EOF'
 EOF
 ```
 
-### 7. Context Snapshot
+### 7. Notes and search
+
+Notes work without creating or claiming a task. Existing handoffs are searchable automatically; do not copy them into notes just to make them findable. A correction note may supersede an outdated handoff for retrieval while the original task history stays intact.
+
+```bash
+lore note add --input - <<'EOF'
+{
+  "schemaVersion": 1,
+  "projectId": "<PROJECT_UUID>",
+  "actorId": "grok",
+  "requestId": "note-add-01",
+  "payload": {
+    "title": "Coupon migration filename",
+    "finding": "Staging repair is 20260907000002_coupon_checkout_committed_at.sql, not 20260907000000.",
+    "reason": "Supabase versions collide if two files share 20260907000000.",
+    "evidenceRefs": ["reports/psigenei-security-2026-09-06/GROK-IMPLEMENTATION-RECHECK.md"],
+    "paths": ["supabase/migrations/20260907000002_coupon_checkout_committed_at.sql"],
+    "observedCommit": null,
+    "status": "proposed",
+    "taskId": null,
+    "supersedesId": null
+  }
+}
+EOF
+```
+
+```bash
+lore note get --input - <<'EOF'
+{
+  "schemaVersion": 1,
+  "projectId": "<PROJECT_UUID>",
+  "payload": { "noteId": "<NOTE_OR_HANDOFF_UUID>" }
+}
+EOF
+```
+
+Convenience forms:
+
+```bash
+lore note get <NOTE_OR_HANDOFF_UUID> --project <PROJECT_UUID>
+lore search --query "coupon migration repair" --files supabase/migrations --limit 5 --project <PROJECT_UUID>
+```
+
+Envelope form is also valid: `lore search --input -` / `lore search query --input -`.
+
+**Ranking:** title-token hits, then path overlap, then FTS5 bm25, then newest `createdAt`, then `id`. Default `limit` is 5 (max 100). Excerpts are at most 240 characters; use `note get` for full text. Eligibility and ranking are applied before the result limit; omittedCount counts every additional eligible match. `--files` keeps hits whose stored paths equal or nest with a query path. Search covers notes, handoffs, tasks and decisions. Default search returns current items only; pass `"includeSuperseded": true` or `--include-superseded` for history.
+
+**Empty vs failure:** `{hits:[], omittedCount:0}` with `ok:true` means no matches. `ok:false` is a search failure (`VALIDATION`, `NOT_FOUND`, `IO`, …).
+
+### 8. Context Snapshot
 
 Retrieve formatted, bounded markdown context:
 
@@ -384,7 +436,7 @@ lore context --input - <<'EOF'
 EOF
 ```
 
-### 8. First-run init
+### 9. First-run init
 
 ```bash
 lore detect
@@ -394,7 +446,7 @@ lore init --agent codex:implement --agent claude:review --write-rules --demo
 
 With no `--agent`, init scans PATH and home config dirs for known CLIs. `lore detect` prints the same list. Auth-file presence is not a billed-plan check. TTY init still asks implement / review / both. Not a `postinstall` hook. See [Install into sessions](integrations.md#install-into-sessions).
 
-### 9. Instructions Export
+### 10. Instructions Export
 
 Display safely quoted integration snippet:
 
@@ -403,3 +455,7 @@ lore instructions show --project <PROJECT_UUID> --agent <AGENT_ID> [--home <DIR>
 ```
 
 Paste that into each CLI's always-on rules, using **that session's** agent id. See [Install into sessions](integrations.md#install-into-sessions) and [templates/session-rule.md](../templates/session-rule.md). Loreforge never starts models or creates worktrees. Roles are not bound to vendor names.
+
+## 0.2 package workflows
+
+See [Package workflows](package-workflows.md) for automatic repository configuration, doctor, task pagination/recovery, correction history, reviews, MCP, and backup/restore/export. Project-scoped CLI envelopes may omit projectId when the current repository is registered in the selected home.

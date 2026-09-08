@@ -41,6 +41,9 @@ The CLI receives input without the `operation` field; the CLI automatically maps
 | `decision.record` | [`inputs/decision-record.json`](file:///Users/mnz/dev/loreforge/examples/inputs/decision-record.json) | Record an architectural decision | `projectId`, `actorId`, `requestId` |
 | `context.get` | [`inputs/context-get-work.json`](file:///Users/mnz/dev/loreforge/examples/inputs/context-get-work.json) | Fetch work context snapshot | `projectId` (read) |
 | `context.get` | [`inputs/context-get-review.json`](file:///Users/mnz/dev/loreforge/examples/inputs/context-get-review.json) | Fetch review context snapshot | `projectId` (read) |
+| `note.add` | [`inputs/note-add.json`](inputs/note-add.json) | Record a standalone finding | `projectId`, `actorId`, `requestId` |
+| `note.get` | [`inputs/note-get.json`](inputs/note-get.json) | Retrieve a note or searchable handoff | `projectId` (read) |
+| `search.query` | [`inputs/search-query.json`](inputs/search-query.json) | Search current notes and handoffs | `projectId` (read) |
 
 ## Note on IDs
 
