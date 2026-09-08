@@ -34,6 +34,8 @@ describe("CLI main runner (A16, A17)", () => {
 
       assert.equal(code, 0);
       assert.ok(stdout.content.includes("Loreforge — shared memory for independent agents."));
+      assert.ok(stdout.content.includes("lore search"));
+      assert.ok(stdout.content.includes("Empty list means no matches") || stdout.content.includes("Hits []"));
       assert.equal(existsSync(nonExistentState), false, "State directory must not be created on --help");
     } finally {
       rmSync(tempHome, { recursive: true, force: true });

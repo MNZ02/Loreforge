@@ -57,11 +57,11 @@ function joinRowToQuestion(row: QuestionJoinRow): Question {
   return toQuestion(base, answer);
 }
 
-export function getContext(db: DatabaseSync, nowMs: number, request: ContextGetRequest): ContextGetData {
+export async function getContext(db: DatabaseSync, nowMs: number, request: ContextGetRequest): Promise<ContextGetData> {
   const project = requireProject(db, request.projectId);
   // Git observation happens outside the read transaction: never hold DB locks
   // during Git. A missing/unreadable checkout yields nulls plus an error.
-  const currentGit = observeCurrentGit(project.root, nowMs);
+  const currentGit = await observeCurrentGit(project.root, nowMs);
   const mode = request.payload.mode;
 
   const snapshot = withRead(db, (): ContextSnapshot => {

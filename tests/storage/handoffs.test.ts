@@ -585,7 +585,7 @@ describe("read-only Git observation (CODEX-003)", () => {
         readRequest("context.get", env.project.id, { taskId: task.id }),
       );
       // Direct observation of the linked worktree.
-      const wtObserved = observeCheckout(worktree, Date.now());
+      const wtObserved = await observeCheckout(worktree, Date.now());
       assert.equal(wtObserved.dirty, false);
       assert.deepEqual(readFileSync(mainIndex), beforeMain);
       assert.deepEqual(readFileSync(wtIndex), beforeWt);

@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 import type { CurrentGit } from "../core/contracts.js";
@@ -40,6 +40,23 @@ function runGit(cwd: string, args: string[]): { status: number | null; stdout: s
   }
 }
 
+// Consume status incrementally: retain only the dirty bit, not the file listing.
+// Wait for successful exit so partial output from a failed Git command is not evidence.
+async function observeDirty(cwd: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("git", ["--no-optional-locks", "status", "--porcelain", "-z"], {
+      cwd, stdio: ["ignore", "pipe", "ignore"], timeout: GIT_TIMEOUT_MS,
+    });
+    let dirty = false;
+    child.stdout.on("data", (chunk: Buffer) => { if (chunk.length) dirty = true; });
+    child.once("error", () => reject(OpError.conflict("could not collect Git status")));
+    child.once("close", (code) => {
+      if (code === 0) resolve(dirty);
+      else reject(OpError.conflict("could not collect Git status"));
+    });
+  });
+}
+
 // Core-collected read-only observation attached to every handoff. Timestamped
 // evidence of what the core saw; explicitly not a filesystem lock and not an
 // immutable snapshot of dirty content.
@@ -53,7 +70,7 @@ export interface CheckoutObservation {
 // Observe a checkout without modifying it. Any collection failure is CONFLICT
 // (the reported evidence cannot be accepted), never a completed task: callers
 // run this outside the write transaction and only persist inside it.
-export function observeCheckout(checkoutRoot: string, nowMs: number): CheckoutObservation {
+export async function observeCheckout(checkoutRoot: string, nowMs: number): Promise<CheckoutObservation> {
   let canonical: string;
   try {
     canonical = realpathSync(checkoutRoot);
@@ -65,14 +82,11 @@ export function observeCheckout(checkoutRoot: string, nowMs: number): CheckoutOb
   if (headProbe.status !== 0 || !GIT_HEAD_RE.test(head)) {
     throw OpError.conflict("could not collect Git observation for reported checkout");
   }
-  const statusProbe = runGit(canonical, ["status", "--porcelain"]);
-  if (statusProbe.status !== 0) {
-    throw OpError.conflict("could not collect Git observation for reported checkout");
-  }
+  const dirty = await observeDirty(canonical);
   return {
     checkoutRoot: canonical,
     head: head.toLowerCase(),
-    dirty: statusProbe.stdout.length > 0,
+    dirty,
     collectedAt: new Date(nowMs).toISOString(),
   };
 }
@@ -80,7 +94,7 @@ export function observeCheckout(checkoutRoot: string, nowMs: number): CheckoutOb
 // Best-effort read of the registered project root for context snapshots. An
 // absent or unreadable root is null head/dirty plus a sanitized error, never
 // a failed context request. Never throws.
-export function observeCurrentGit(root: string, nowMs: number): CurrentGit {
+export async function observeCurrentGit(root: string, nowMs: number): Promise<CurrentGit> {
   const collectedAt = new Date(nowMs).toISOString();
   const failure: CurrentGit = { head: null, dirty: null, collectedAt, error: "could not read project Git state" };
   let canonical: string;
@@ -89,19 +103,12 @@ export function observeCurrentGit(root: string, nowMs: number): CurrentGit {
   } catch {
     return failure;
   }
-  let headProbe: { status: number | null; stdout: string };
-  let statusProbe: { status: number | null; stdout: string };
   try {
-    headProbe = runGit(canonical, ["rev-parse", "HEAD"]);
-    statusProbe = runGit(canonical, ["status", "--porcelain"]);
+    const observed = await observeCheckout(canonical, nowMs);
+    return { head: observed.head, dirty: observed.dirty, collectedAt, error: null };
   } catch {
     return failure;
   }
-  const head = headProbe.stdout.trim();
-  if (headProbe.status !== 0 || !GIT_HEAD_RE.test(head) || statusProbe.status !== 0) {
-    return failure;
-  }
-  return { head: head.toLowerCase(), dirty: statusProbe.stdout.length > 0, collectedAt, error: null };
 }
 
 // Resolve a checkout root to its canonical project identity. Worktrees of one
@@ -125,7 +132,9 @@ export function discoverProject(root: string): ProjectIdentity {
   }
   const joined = isAbsolute(reported) ? reported : resolve(canonicalRoot, reported);
   try {
-    return { root: canonicalRoot, gitCommonDir: realpathSync(joined) };
+    const top = runGit(canonicalRoot, ["rev-parse", "--show-toplevel"]);
+    if (top.status !== 0) throw OpError.validation("project must be a working Git repository");
+    return { root: realpathSync(top.stdout.trim()), gitCommonDir: realpathSync(joined) };
   } catch {
     throw OpError.validation("project root is not inside a Git repository");
   }

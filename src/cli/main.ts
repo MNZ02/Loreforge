@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { readProjectBinding } from "./project-config.js";
+import { runManagement, currentProject } from "./management.js";
+import { OpError } from "../core/errors.js";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { openCore, CoreOpenError, parseRequest, validationDetails } from "../core/index.js";
@@ -29,10 +32,19 @@ Usage:
   lore handoff  --input <file|-> [--home <dir>] [--json]
   lore ask      --input <file|-> [--home <dir>] [--json]
   lore inbox    --input <file|-> [--home <dir>] [--json]
+  lore search   --query "..." [--files path,path] [--limit 5] --project <uuid> [--home <dir>] [--json]
+  lore note get <id> --project <uuid> [--home <dir>] [--json]
   lore <namespace> <verb> --input <file|-> [--home <dir>] [--json]
   lore instructions show --project <uuid> --agent <agent-id> [--home <dir>]
   lore init [--agent id[:role]]... [--root <git>] [--name <name>] [--write-rules] [--write-user-rules] [--demo] [--detect|--no-detect] [--home <dir>] [--json]
   lore detect [--json]
+  lore doctor [--home <dir>] [--json]
+  lore project current [--home <dir>] [--json]
+  lore task list [--claimable|--expired] [--status <status>] [--cursor <cursor>] [--limit <n>]
+  lore backup --output <file> [--home <dir>]
+  lore restore --input <backup> --home <new-directory>
+  lore export [--project <uuid>] [--format json|markdown] [--output <file>]
+  lore mcp [--home <dir>]
   lore --help
 
 Everyday:
@@ -40,8 +52,18 @@ Everyday:
   handoff                 Submit a completed or blocked handoff with git evidence
   ask                     Ask a task-linked question
   inbox                   List inbox events for an agent
+  search                  Search current notes and handoffs (SQLite FTS5)
 
 Other operations:
+  project list/current    Discover projects or resolve this repository
+  agent list              Discover registered agents
+  doctor                  Diagnose repository binding, schema and integrity
+  review record/list      Record/read reviews tied to a handoff and commit
+  note history            Follow a correction chain (paged)
+  decision list           List active decisions (paged)
+  index check/rebuild     Check or rebuild derived search data
+  backup/restore/export   Back up state, restore into a new home, export records
+  mcp                     Serve core operations over MCP stdio
   project register        Register a git repository as a project
   agent register          Register an agent identity
   task create             Create a task
@@ -54,6 +76,9 @@ Other operations:
   task cancel             Cancel a task
   question answer         Answer a pending question
   decision record         Record an architectural decision
+  note add                Record a standalone finding (no task required)
+  note get                Retrieve a note or searchable handoff by id
+  search query            Search notes and handoffs; empty hits are success
   instructions show       Print generic session instruction template
   init                    Register a repo and agents, optional sample tasks and session rules
   detect                  List local coding CLIs (PATH + config dirs; does not read keys)
@@ -62,15 +87,27 @@ Options:
   --input <file|->        Path to JSON envelope input file or '-' for stdin (max 64 KiB)
   --home <dir>            State directory (default: LOREFORGE_HOME or ~/.loreforge/context-v1)
   --json                  Output exactly one JSON response line on stdout
-  --project <uuid>        Project UUID (for instructions show)
+  --project <uuid>        Explicit project (otherwise resolved from current repository)
   --agent <id[:role]>     Agent id, optional :implement|:review|:both (repeatable on init)
+  --mode work|review     Context mode for instructions show (defaults to roster role)
   --root <dir>            Git repository root (init)
   --name <name>           Project display name (init)
   --write-rules           Init: write repo AGENTS.md / .grok/rules (not ~/.grok)
   --write-user-rules      Init: also overwrite ~/.grok/rules and ~/.claude/rules
   --demo                  Init: create two sample tasks
   --detect / --no-detect  Init: auto-fill agents from local CLIs (default: detect)
+  --query <text>          Search text (search only)
+  --files <paths>         Comma-separated or repeatable relative paths (search only)
+  --limit <n>             Search/task-list cap, max 100 (defaults 5/20)
+  --include-superseded    Include superseded records in search
+  --claimable / --expired Filter task list by live lease/dependency state
+  --status / --cursor     Task status filter and opaque next-page cursor
   --help, -h              Show this help message
+
+Search covers notes, handoffs, tasks and decisions. Ranking: title-token hits, then path overlap, then FTS5 bm25, then
+newest created_at, then id. Default search hides superseded items. Excerpts
+are at most 240 characters; use note get for full text. Hits [] with ok true
+means no matches, not a failure. Verified status is the author's assertion.
 `
   );
   stdout.write(helpText);
@@ -115,6 +152,14 @@ export async function runCli(
   if (parsed.kind === "help") {
     printHelp(stdout, parsed.topic);
     return 0;
+  }
+
+  if (parsed.kind === "management") {
+    try { return await runManagement(parsed, env, stdout); }
+    catch (error) {
+      const code = error instanceof OpError || error instanceof CoreOpenError ? error.code : error instanceof CliValidationError ? "VALIDATION" : "IO";
+      return handleErrorOutput({code, message:error instanceof Error ? error.message : "Operation failed"}, parsed.json, stdout, stderr);
+    }
   }
 
   if (parsed.kind === "detect") {
@@ -173,6 +218,7 @@ export async function runCli(
       const text = generateInstructions({
         projectId: parsed.projectId,
         agentId: parsed.agentId,
+        mode: parsed.mode ?? (readProjectBinding()?.agents.find(agent => agent.id === parsed.agentId)?.role === "review" ? "review" : "work"),
         homeDir
       });
       stdout.write(text + "\n");
@@ -196,26 +242,46 @@ export async function runCli(
   }
 
   // 4. Handle Operation Command
-  const { operation, inputPath, home: explicitHome, json } = parsed;
-  const home = resolveHomeDir(explicitHome, env);
+  const { operation, inputPath, builtEnvelope, home: explicitHome, json } = parsed;
+  let home: string;
+  try { home = resolveHomeDir(explicitHome, env); }
+  catch (error) { return handleErrorOutput({code:"VALIDATION",message:error instanceof Error ? error.message : "Invalid repository configuration"}, json, stdout, stderr); }
 
   // 4a. Read bounded input (enforcing 64 KiB byte limit, UTF-8, JSON shape)
+  // Flag-built envelopes (search --query, note get <id>) skip stdin/file input.
   let rawPayload: Record<string, unknown>;
-  try {
-    rawPayload = await readBoundedInput(inputPath, stdin);
-  } catch (err: unknown) {
-    if (err instanceof CliInputError) {
-      return handleErrorOutput({ code: err.code, message: err.message }, json, stdout, stderr);
+  if (builtEnvelope) {
+    rawPayload = builtEnvelope;
+  } else {
+    if (!inputPath) {
+      return handleErrorOutput(
+        { code: "VALIDATION", message: "Missing required --input <file|-> argument" },
+        json,
+        stdout,
+        stderr
+      );
     }
-    return handleErrorOutput(
-      { code: "IO", message: err instanceof Error ? err.message : "Input error" },
-      json,
-      stdout,
-      stderr
-    );
+    try {
+      rawPayload = await readBoundedInput(inputPath, stdin);
+    } catch (err: unknown) {
+      if (err instanceof CliInputError) {
+        return handleErrorOutput({ code: err.code, message: err.message }, json, stdout, stderr);
+      }
+      return handleErrorOutput(
+        { code: "IO", message: err instanceof Error ? err.message : "Input error" },
+        json,
+        stdout,
+        stderr
+      );
+    }
   }
 
   // 4b. Pure validation via parseRequest before opening state
+  const globalOperation = ["project.register", "agent.register", "project.list", "agent.list"].includes(operation);
+  if (!globalOperation && rawPayload.projectId === undefined) {
+    try { rawPayload.projectId = parsed.projectId ?? currentProject(home).projectId; }
+    catch (error) { return handleErrorOutput({code:"VALIDATION",message:error instanceof Error ? error.message : "Specify --project or initialize this repository"},json,stdout,stderr); }
+  }
   const candidateRequest = {
     ...rawPayload,
     operation

@@ -93,7 +93,9 @@ describe("lore init", () => {
       assert.equal(existsSync(join(userHome, ".claude", "rules", "loreforge.md")), false);
       const grokRule = readFileSync(join(userHome, ".grok", "rules", "loreforge.md"), "utf8");
       assert.ok(grokRule.includes("review"));
-      assert.ok(grokRule.includes("Agent ID:   grok"));
+      assert.ok(grokRule.includes("Agent label: grok"));
+      assert.equal(grokRule.includes(result.projectId), false);
+      assert.equal(grokRule.includes(home), false);
       const agentsMd = readFileSync(join(root, "AGENTS.md"), "utf8");
       assert.ok(agentsMd.includes("Roster"));
       assert.equal(agentsMd.includes("Agent ID:   claude"), false);

@@ -14,6 +14,9 @@ import {
 } from "../support/harness.js";
 import { runCoreChild } from "../support/proc.js";
 import type { Agent } from "../../src/core/contracts.js";
+import { MIGRATIONS } from "../../src/storage/schema.js";
+
+const APPLIED_VERSIONS = MIGRATIONS.map((migration) => migration.version);
 
 function migrationVersions(home: string): number[] {
   const db = new DatabaseSync(join(home, "loreforge.sqlite3"));
@@ -29,7 +32,7 @@ function migrationVersions(home: string): number[] {
 }
 
 describe("storage lifecycle (A01)", async () => {
-  it("initializes twice, preserves data, and keeps one schema version", async () => {
+  it("initializes twice, preserves data, and applies each schema version once", async () => {
     const first: TestCore = openTestCore();
     let createdAt = "";
     try {
@@ -57,7 +60,7 @@ describe("storage lifecycle (A01)", async () => {
     } finally {
       closeCore(second.core);
     }
-    assert.deepEqual(migrationVersions(first.home), [1]);
+    assert.deepEqual(migrationVersions(first.home), APPLIED_VERSIONS);
     removeDir(first.home);
   });
 
@@ -99,7 +102,7 @@ describe("storage lifecycle (A01)", async () => {
       } finally {
         closeCore(check.core);
       }
-      assert.deepEqual(migrationVersions(home), [1]);
+      assert.deepEqual(migrationVersions(home), APPLIED_VERSIONS);
     } finally {
       removeDir(home);
     }

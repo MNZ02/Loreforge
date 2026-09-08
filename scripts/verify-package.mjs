@@ -1,0 +1,67 @@
+// End-to-end release gate against an actual npm tarball installed in isolation.
+import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import { execFileSync, spawnSync } from 'node:child_process';
+
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
+const temp = mkdtempSync(join(tmpdir(), 'loreforge-package-gate-'));
+const installation = join(temp, 'installed');
+const repo = join(temp, 'repo');
+const home = join(temp, 'state');
+let client;
+try {
+  const packed = JSON.parse(execFileSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temp], { cwd: root, encoding: 'utf8' }))[0];
+  execFileSync('npm', ['install', '--prefix', installation, join(temp, packed.filename), '--ignore-scripts', '--no-audit', '--no-fund'], { encoding: 'utf8', stdio: 'pipe' });
+  const bin = join(installation, 'node_modules', '.bin', 'lore');
+  const alias = join(installation, 'node_modules', '.bin', 'company');
+  mkdirSync(repo);
+  execFileSync('git', ['init', '-q'], { cwd: repo });
+  execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', 'commit', '--allow-empty', '-m', 'fixture'], { cwd: repo, stdio: 'pipe' });
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], {cwd:repo, encoding:'utf8'}).trim();
+  const env = {...process.env, LOREFORGE_HOME:home, PATH:join(installation,'node_modules','.bin')+':'+process.env.PATH};
+  const call = (args, input, targetHome=home) => JSON.parse(execFileSync(bin, [...args,'--json'], {cwd:repo, env:{...env,LOREFORGE_HOME:targetHome}, input:input===undefined?undefined:JSON.stringify(input), encoding:'utf8'}));
+  assert.match(execFileSync(alias,['--help'],{cwd:repo,env,encoding:'utf8'}), /Loreforge/);
+  const initialized = call(['init','--root',repo,'--agent','test','--no-detect']);
+  assert.equal(initialized.ok,true);
+  const projectId = initialized.data.projectId;
+  assert.equal(call(['doctor']).data.healthy,true);
+  assert.equal(call(['project','current']).data.projectId,projectId);
+  assert.ok(call(['project','list']).data.projects.some(p=>p.id===projectId));
+  const mutation = (requestId,payload) => ({schemaVersion:1,actorId:'test',requestId,payload});
+  const task=call(['task','create','--input','-'],mutation('create',{title:'Package gate',description:'Tarball verification',dependsOn:[]})).data.task;
+  const claim=call(['task','claim','--input','-'],mutation('claim',{taskId:task.id}));
+  assert.ok(claim.data.claimToken);
+  const handoff=call(['handoff','--input','-'],mutation('handoff',{taskId:task.id,claimToken:claim.data.claimToken,outcome:'completed',summary:'Verified package gate',evidence:{checkoutRoot:repo,head,dirty:false,files:[],checks:[{command:'package test',outcome:'passed',summary:'verifiedgate'}]},unresolved:[],nextSteps:[],blockingQuestionIds:[]}));
+  assert.equal(handoff.ok,true);
+  const review=call(['review','record','--input','-'],mutation('review',{handoffId:handoff.data.handoff.id,observedCommit:head,outcome:'approved',body:'Package flow verified'}));
+  assert.equal(review.data.review.handoffId,handoff.data.handoff.id);
+  const add=(requestId,changes={})=>call(['note','add','--input','-'],mutation(requestId,{title:'Recovery knowledge',finding:'verifiedgate recovery',reason:'Evidence',evidenceRefs:[],paths:['./src/file.ts'],observedCommit:head,status:'proposed',taskId:null,supersedesId:null,...changes})).data.note;
+  const old=add('old'), correction=add('correction',{supersedesId:old.id});
+  const search=call(['search','--query','verifiedgate','--files','src/']);
+  assert.deepEqual(search.data.hits.map(h=>h.id),[correction.id]);
+  const history=call(['note','history','--input','-'],{schemaVersion:1,payload:{noteId:old.id}});
+  assert.deepEqual(history.data.history.map(n=>n.id),[old.id,correction.id]);
+  assert.equal(call(['index','check']).data.index.healthy,true);
+  const backup=join(temp,'backup.sqlite3');assert.equal(call(['backup','--output',backup]).ok,true);
+  const exported=call(['export','--project',projectId]);
+  assert.ok(!JSON.stringify(exported).includes(claim.data.claimToken));assert.ok(!('mutation_receipts' in exported));
+  const markdown=join(temp,'records.md');call(['export','--project',projectId,'--format','markdown','--output',markdown]);assert.match(readFileSync(markdown,'utf8'),/Recovery knowledge/);
+  const restored=join(temp,'restored');assert.equal(call(['restore','--input',backup,'--home',restored]).ok,true);
+  assert.equal(call(['task','get','--input','-'],{schemaVersion:1,payload:{taskId:task.id}},restored).data.task.status,'completed');
+  const bad=spawnSync(bin,['search','--input','-','--files','src','--json'],{cwd:repo,env,encoding:'utf8',input:'{}'});assert.equal(bad.status,2);
+  const {Client}=await import(pathToFileURL(join(installation,'node_modules','@modelcontextprotocol','sdk','dist','esm','client','index.js')).href);
+  const {StdioClientTransport}=await import(pathToFileURL(join(installation,'node_modules','@modelcontextprotocol','sdk','dist','esm','client','stdio.js')).href);
+  client=new Client({name:'package-gate',version:'1.0.0'});
+  await client.connect(new StdioClientTransport({command:bin,args:['mcp','--home',restored],cwd:repo,stderr:'pipe'}));
+  const tools=await client.listTools();assert.equal(tools.tools.length,27);
+  const response=await client.callTool({name:'lore_search_query',arguments:{schemaVersion:1,projectId,payload:{query:'verifiedgate',sources:['handoff']}}});
+  const result=JSON.parse(response.content[0].text);assert.equal(result.ok,true);assert.equal(result.data.hits[0].id,handoff.data.handoff.id);
+  await client.close();client=undefined;
+  console.log(JSON.stringify({ok:true,package:packed.id,files:packed.entryCount,mcpTools:tools.tools.length,verified:['installed bins','init and doctor','project resolution','task claim and handoff','review','search and correction history','index','WAL backup and restore','JSON and Markdown export','input validation','installed MCP round trip']}));
+} finally {
+  if(client) await client.close();
+  rmSync(temp,{recursive:true,force:true});
+}

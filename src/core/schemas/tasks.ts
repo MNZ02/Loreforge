@@ -30,6 +30,9 @@ export type TaskGetPayload = z.infer<typeof TaskGetPayloadSchema>;
 export const TaskListPayloadSchema = z.strictObject({
   status: TaskStatusSchema.optional(),
   limit: LimitSchema,
+  cursor: z.string().max(1000).optional(),
+  claimable: z.boolean().optional(),
+  expired: z.boolean().optional(),
 });
 export type TaskListPayload = z.infer<typeof TaskListPayloadSchema>;
 

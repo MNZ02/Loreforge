@@ -1,3 +1,4 @@
+import { readProjectBinding } from "./project-config.js";
 import { homedir } from "node:os";
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
@@ -10,11 +11,13 @@ export { DB_FILENAME, LEGACY_DB_FILENAME } from "../storage/db.js";
  * 1. Explicit --home
  * 2. LOREFORGE_HOME, then LORE_HOME
  * 3. AGENT_COMPANY_HOME (pre-rename)
- * 4. ~/.loreforge/context-v1, or ~/.agent-company/context-v1 if that already exists
+ * 4. Current repository binding
+ * 5. ~/.loreforge/context-v1, or ~/.agent-company/context-v1 if that already exists
  */
 export function resolveHomeDir(
   explicitHome?: string,
-  env: Record<string, string | undefined> = process.env
+  env: Record<string, string | undefined> = process.env,
+  root = process.cwd(),
 ): string {
   if (explicitHome && explicitHome.trim().length > 0) {
     return resolve(explicitHome.trim());
@@ -26,6 +29,9 @@ export function resolveHomeDir(
       return resolve(value.trim());
     }
   }
+
+  const binding = readProjectBinding(root);
+  if (binding) return binding.home;
 
   const nextDefault = resolve(join(homedir(), ".loreforge", "context-v1"));
   const legacyDefault = resolve(join(homedir(), ".agent-company", "context-v1"));

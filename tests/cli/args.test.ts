@@ -160,4 +160,55 @@ describe("CLI Argument Parser (A16, A17)", () => {
       (err: any) => err instanceof CliValidationError && err.message.includes("Unknown flag")
     );
   });
+
+  it("parses search --query convenience flags", () => {
+    const parsed = parseCliArgs([
+      "search",
+      "--query",
+      "coupon migration repair",
+      "--files",
+      "supabase/migrations,src/lib/payments",
+      "--limit",
+      "5",
+      "--project",
+      "11111111-1111-4111-8111-111111111111",
+      "--json",
+    ]);
+    assert.equal(parsed.kind, "operation");
+    if (parsed.kind === "operation") {
+      assert.equal(parsed.operation, "search.query");
+      assert.equal(parsed.inputPath, null);
+      assert.equal(parsed.builtEnvelope?.payload && (parsed.builtEnvelope.payload as { query: string }).query, "coupon migration repair");
+      assert.deepEqual((parsed.builtEnvelope?.payload as { files: string[] }).files, [
+        "supabase/migrations",
+        "src/lib/payments",
+      ]);
+    }
+  });
+
+  it("parses note get <id> without --input", () => {
+    const parsed = parseCliArgs([
+      "note",
+      "get",
+      "22222222-2222-4222-8222-222222222222",
+      "--project",
+      "11111111-1111-4111-8111-111111111111",
+    ]);
+    assert.equal(parsed.kind, "operation");
+    if (parsed.kind === "operation") {
+      assert.equal(parsed.operation, "note.get");
+      assert.equal(parsed.inputPath, null);
+      assert.equal(
+        (parsed.builtEnvelope?.payload as { noteId: string }).noteId,
+        "22222222-2222-4222-8222-222222222222",
+      );
+    }
+  });
+
+  it("rejects --query on non-search commands", () => {
+    assert.throws(
+      () => parseCliArgs(["task", "list", "--input", "-", "--query", "nope"]),
+      (err: any) => err instanceof CliValidationError && err.message.includes("Unknown flag"),
+    );
+  });
 });

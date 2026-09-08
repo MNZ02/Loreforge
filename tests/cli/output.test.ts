@@ -69,6 +69,44 @@ describe("CLI Output Formatting (A17)", () => {
     assert.ok(!stdout.content.includes("secret-token-xyz"));
   });
 
+  it("formats search hits and labels an empty list as no matches", () => {
+    const stdout = new StringWritable();
+    handleSuccessOutput(
+      "search.query",
+      {
+        schemaVersion: 1,
+        ok: true,
+        data: {
+          hits: [
+            {
+              id: "note-1",
+              source: "note",
+              title: "Coupon migration repair",
+              excerpt: "Use 20260907000002…",
+              status: "proposed",
+              current: true,
+            },
+          ],
+          omittedCount: 0,
+        } as any,
+      },
+      false,
+      stdout as any,
+    );
+    assert.ok(stdout.content.includes("note-1"));
+    assert.ok(stdout.content.includes("Empty list means no matches"));
+
+    const empty = new StringWritable();
+    handleSuccessOutput(
+      "search.query",
+      { schemaVersion: 1, ok: true, data: { hits: [], omittedCount: 0 } as any },
+      false,
+      empty as any,
+    );
+    assert.ok(empty.content.includes("0 returned"));
+    assert.ok(empty.content.includes("Empty list means no matches"));
+  });
+
   it("formats error response as JSON on stdout and returns exit code", () => {
     const stdout = new StringWritable();
     const stderr = new StringWritable();

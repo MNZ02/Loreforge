@@ -10,6 +10,7 @@ import type {
 import { OpError } from "../errors.js";
 import { discoverProject, observeCheckout } from "../../evidence/git.js";
 import { faultBoundary } from "../../storage/faults.js";
+import { indexHandoffDocument } from "../../storage/search-index.js";
 import { readReceipt } from "../../storage/receipts.js";
 import {
   requireAgent,
@@ -120,11 +121,11 @@ function checkBlockingQuestions(
   }
 }
 
-export function submitHandoff(
+export async function submitHandoff(
   db: DatabaseSync,
   now: () => number,
   request: HandoffSubmitRequest,
-): HandoffSubmitData {
+): Promise<HandoffSubmitData> {
   const early = readReceipt<HandoffSubmitData>(db, request);
   if (early !== undefined) return early;
   // Git observation is collected outside the transaction, then rechecked
@@ -132,7 +133,7 @@ export function submitHandoff(
   // moves or disappears because the dispatch-layer receipt check replays the
   // original response before collection runs again.
   const observedAtMs = now();
-  const observed = observeCheckout(request.payload.evidence.checkoutRoot, observedAtMs);
+  const observed = await observeCheckout(request.payload.evidence.checkoutRoot, observedAtMs);
   // The checkout must belong to the registered project: same realpath Git
   // common directory, so linked worktrees pass and unrelated repositories or
   // independent clones fail. Identity collection stays outside the
@@ -203,6 +204,7 @@ export function submitHandoff(
     );
     faultBoundary("handoff.receipt");
     const handoffRow = db.prepare("SELECT * FROM handoffs WHERE id = ?").get(handoffId) as unknown as HandoffRow;
+    indexHandoffDocument(db, handoffRow);
     const task = toTask(db, loadTask(db, request.projectId, row.id));
     return { task, handoff: toHandoff(handoffRow) };
   });

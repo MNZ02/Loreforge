@@ -1,4 +1,4 @@
-import { renderContext, ContextSnapshot } from "../context/render.js";
+import { renderContext, sanitizePeerText, ContextSnapshot } from "../context/render.js";
 import { OperationName } from "./args.js";
 
 export const ERROR_EXIT_CODES: Record<string, number> = {
@@ -43,7 +43,14 @@ export function handleSuccessOutput(
     return;
   }
 
-  const data = response.data as Record<string, any>;
+  // Sanitize human output once at its boundary; preserve JSON data verbatim.
+  function clean(value: any): any {
+    if (typeof value === "string") return sanitizePeerText(value);
+    if (Array.isArray(value)) return value.map(clean);
+    if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, clean(v)]));
+    return value;
+  }
+  const data = clean(response.data) as Record<string, any>;
 
   if (operation === "context.get" && data.snapshot) {
     stdout.write(renderContext(data.snapshot as ContextSnapshot) + "\n");
@@ -88,6 +95,10 @@ export function handleSuccessOutput(
     for (const t of data.tasks) {
       stdout.write(`- [${t.id}] ${t.title} (${t.status}, attempt ${t.attempt})\n`);
     }
+    if (data.nextCursor) stdout.write(`Next cursor: ${data.nextCursor}\n`);
+    for (const [id, info] of Object.entries(data.availability ?? {}) as Array<[string, {claimable:boolean; expired:boolean; blockedBy:string[]}]>) {
+      if (info.expired || info.blockedBy.length) stdout.write(`  ${id}: ${info.expired ? "expired; " : ""}${info.claimable ? "claimable" : `blocked by ${info.blockedBy.join(", ")}`}\n`);
+    }
     return;
   }
 
@@ -109,7 +120,7 @@ export function handleSuccessOutput(
   if (operation === "inbox.list" && Array.isArray(data.events)) {
     stdout.write(`Inbox events (${data.events.length} returned, nextCursor: ${data.nextCursor}, hasMore: ${data.hasMore}):\n`);
     for (const ev of data.events) {
-      stdout.write(`- [Event ${ev.id}] ${ev.kind} (Task ${ev.taskId}, Question ${ev.questionId})\n`);
+      stdout.write(`- [Event ${ev.id}] ${ev.kind} (Task ${ev.taskId}, Question ${ev.questionId})\n  ${ev.body}\n`);
     }
     return;
   }
@@ -119,13 +130,48 @@ export function handleSuccessOutput(
     return;
   }
 
+  if ((operation === "note.add" || operation === "note.get") && data.note) {
+    const n = data.note;
+    const current = n.current ? "current" : "superseded";
+    stdout.write(
+      `Note [${n.id}] ${n.title}\n` +
+      `Source: ${n.source} | Status: ${n.status} | ${current} | Author: ${n.authorId ?? "unknown"}\n`,
+    );
+    if (n.supersedesId) stdout.write(`Supersedes: ${n.supersedesId}\n`);
+    if (n.supersededById) stdout.write(`Superseded by: ${n.supersededById}\n`);
+    if (n.observedCommit) stdout.write(`Observed commit: ${n.observedCommit}${n.evidenceDirty ? " (uncommitted changes)" : ""}\n`);
+    if (operation === "note.get") {
+      stdout.write(`Finding: ${n.finding}\nReason: ${n.reason}\n`);
+      if (Array.isArray(n.evidenceRefs) && n.evidenceRefs.length > 0) {
+        stdout.write(`Evidence: ${n.evidenceRefs.join("; ")}\n`);
+      }
+      if (Array.isArray(n.paths) && n.paths.length > 0) {
+        stdout.write(`Paths: ${n.paths.join(", ")}\n`);
+      }
+    }
+    return;
+  }
+
+  if (operation === "search.query" && Array.isArray(data.hits)) {
+    stdout.write(
+      `Search hits (${data.hits.length} returned, ${data.omittedCount ?? 0} omitted). Empty list means no matches.\n`,
+    );
+    for (const hit of data.hits) {
+      const current = hit.current ? "current" : "superseded";
+      stdout.write(
+        `- [${hit.id}] ${hit.title} (${hit.source}, ${hit.status}, ${current}, ${hit.freshness ?? "unknown"})\n  ${hit.excerpt}\n`,
+      );
+    }
+    return;
+  }
+
   // Fallback for renew, release, reopen, cancel
   if (data.task) {
     stdout.write(`Task [${data.task.id}] updated to status ${data.task.status}.\n`);
     return;
   }
 
-  stdout.write(`Operation ${operation} succeeded.\n`);
+  stdout.write(JSON.stringify(data, null, 2) + "\n");
 }
 
 /**
@@ -153,6 +199,6 @@ export function handleErrorOutput(
     return exitCode;
   }
 
-  stderr.write(`Error [${error.code}]: ${error.message}\n`);
+  stderr.write(`Error [${error.code}]: ${sanitizePeerText(error.message)}\n`);
   return exitCode;
 }

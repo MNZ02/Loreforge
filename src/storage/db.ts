@@ -1,8 +1,10 @@
+import { pathsOverlap, countPathOverlaps, countTitleTokenHits, queryTokens } from "./search-text.js";
 import { DatabaseSync } from "node:sqlite";
 import { chmodSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { CoreOpenError } from "../core/contracts.js";
 import { OpError } from "../core/errors.js";
+import { rebuildSearchIndex } from "./search-index.js";
 import { MIGRATIONS } from "./schema.js";
 
 // Lifecycle: open, pragma setup, versioned migrations, short synchronous
@@ -144,10 +146,12 @@ function migrate(db: DatabaseSync): void {
     const rows = db
       .prepare("SELECT version FROM schema_migrations ORDER BY version")
       .all() as Array<{ version: number }>;
+    if (rows.some(row => row.version > MIGRATIONS.at(-1)!.version)) throw new CoreOpenError("IO", "database schema is newer than this CLI; upgrade Loreforge");
     const applied = new Set(rows.map((row) => row.version));
     for (const migration of MIGRATIONS) {
       if (!applied.has(migration.version)) {
         db.exec(migration.sql);
+        if (migration.version === 3) rebuildSearchIndex(db);
         db.prepare("INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)").run(
           migration.version,
           Date.now(),
@@ -206,6 +210,9 @@ export function openDatabase(home: string): DatabaseSync {
       throw new CoreOpenError("IO", "cannot open database file");
     }
     try {
+      db.function("lore_paths_overlap", { deterministic: true }, (stored, query) => pathsOverlap(JSON.parse(String(stored)), JSON.parse(String(query))) ? 1 : 0);
+      db.function("lore_path_hits", { deterministic: true }, (stored, query) => countPathOverlaps(JSON.parse(String(stored)), JSON.parse(String(query))));
+      db.function("lore_title_hits", { deterministic: true }, (title, query) => countTitleTokenHits(String(title), queryTokens(String(query))));
       db.exec("PRAGMA foreign_keys = ON");
       db.exec(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS}`);
       db.exec("PRAGMA journal_mode = WAL");

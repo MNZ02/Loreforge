@@ -1,16 +1,19 @@
 {
   "name": "loreforge",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.1",
   "type": "module",
-  "description": "Loreforge — shared memory for independent agents.",
+  "description": "Loreforge \u2014 shared memory for independent agents.",
   "engines": {
     "node": ">=24.15.0"
   },
   "files": [
     "dist",
     "templates",
-    "README.md"
+    "README.md",
+    "docs/usage.md",
+    "docs/integrations.md",
+    "docs/package-workflows.md"
   ],
   "bin": {
     "lore": "dist/cli/main.js",
@@ -25,14 +28,30 @@
     "test:core": "node scripts/test.mjs core",
     "test:client": "node scripts/test.mjs client",
     "test:acceptance": "node scripts/test.mjs acceptance",
-    "check": "npm run typecheck && npm run build && npm test"
+    "check": "npm run typecheck && npm run build && npm test",
+    "prepack": "npm run build",
+    "test:package": "npm run build && node scripts/verify-package.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
     "tsx": "4.23.13",
     "typescript": "5.9.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MNZ02/Loreforge.git"
+  },
+  "homepage": "https://github.com/MNZ02/Loreforge#readme",
+  "bugs": {
+    "url": "https://github.com/MNZ02/Loreforge/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
+  "license": "MIT"
 }

@@ -34,6 +34,20 @@ describe("nested limits", () => {
     assert.throws(
       () =>
         parseRequest(
+          mutatePayload("note.add", (p) => ({ ...p, title: "x".repeat(LIMITS.title + 1) })),
+        ),
+      ZodError,
+    );
+    assert.throws(
+      () =>
+        parseRequest(
+          mutatePayload("search.query", (p) => ({ ...p, query: "x".repeat(LIMITS.searchQuery + 1) })),
+        ),
+      ZodError,
+    );
+    assert.throws(
+      () =>
+        parseRequest(
           mutatePayload("task.create", (p) => ({
             ...p,
             description: "x".repeat(LIMITS.description + 1),

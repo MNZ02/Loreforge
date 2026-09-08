@@ -17,6 +17,17 @@ import {
 } from "./questions.js";
 import { DecisionRecordPayloadSchema } from "./decisions.js";
 import { ContextGetPayloadSchema } from "./context.js";
+import {
+  NoteAddPayloadSchema,
+  NoteGetPayloadSchema,
+  SearchQueryPayloadSchema,
+} from "./notes.js";
+
+import { DiscoveryPayloadSchema, ReviewRecordPayloadSchema, ReviewListPayloadSchema, NoteHistoryPayloadSchema, IndexPayloadSchema, DecisionListPayloadSchema } from "./extensions.js";
+
+function globalReadEnvelope<Op extends string, P extends z.ZodType>(operation: Op, payload: P) {
+  return z.strictObject({ schemaVersion: z.literal(SCHEMA_VERSION), operation: z.literal(operation), payload });
+}
 
 // Request envelope rules from CONTRACT.md:
 // - project.register / agent.register: requestId required; projectId and
@@ -68,6 +79,14 @@ const InboxListRequestSchema = z.strictObject({
 });
 
 export const RequestSchema = z.discriminatedUnion("operation", [
+  globalReadEnvelope("project.list", DiscoveryPayloadSchema),
+  globalReadEnvelope("agent.list", DiscoveryPayloadSchema),
+  readEnvelope("decision.list", DecisionListPayloadSchema),
+  readEnvelope("note.history", NoteHistoryPayloadSchema),
+  readEnvelope("index.check", IndexPayloadSchema),
+  mutationEnvelope("index.rebuild", IndexPayloadSchema),
+  mutationEnvelope("review.record", ReviewRecordPayloadSchema),
+  readEnvelope("review.list", ReviewListPayloadSchema),
   registerEnvelope("project.register", ProjectRegisterPayloadSchema),
   registerEnvelope("agent.register", AgentRegisterPayloadSchema),
   mutationEnvelope("task.create", TaskCreatePayloadSchema),
@@ -84,13 +103,17 @@ export const RequestSchema = z.discriminatedUnion("operation", [
   InboxListRequestSchema,
   mutationEnvelope("decision.record", DecisionRecordPayloadSchema),
   readEnvelope("context.get", ContextGetPayloadSchema),
+  mutationEnvelope("note.add", NoteAddPayloadSchema),
+  readEnvelope("note.get", NoteGetPayloadSchema),
+  readEnvelope("search.query", SearchQueryPayloadSchema),
 ]);
 
 export type Request = z.infer<typeof RequestSchema>;
 export type Operation = Request["operation"];
 
-// All sixteen operation names, in contract-table order.
+// v0.1 sixteen operations plus additive notes/search.
 export const OPERATIONS = [
+  "project.list", "agent.list", "decision.list", "note.history", "index.check", "index.rebuild", "review.record", "review.list",
   "project.register",
   "agent.register",
   "task.create",
@@ -107,6 +130,9 @@ export const OPERATIONS = [
   "inbox.list",
   "decision.record",
   "context.get",
+  "note.add",
+  "note.get",
+  "search.query",
 ] as const satisfies readonly Operation[];
 
 // Parse an unknown value into a validated Request. Throws the Zod validation

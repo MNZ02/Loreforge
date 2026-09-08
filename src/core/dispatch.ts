@@ -1,3 +1,4 @@
+import { extensionOperation } from "./operations/extensions.js";
 import type { DatabaseSync } from "node:sqlite";
 import { ZodError } from "zod";
 import {
@@ -16,6 +17,8 @@ import { answerQuestion, askQuestion, listInbox } from "./operations/messages.js
 import { recordDecision } from "./operations/decisions.js";
 import { getContext } from "./operations/context.js";
 import { registerAgent, registerProject } from "./operations/register.js";
+import { addNote, getNote } from "./operations/notes.js";
+import { searchQuery } from "./operations/search.js";
 import { readReceipt } from "../storage/receipts.js";
 import type { ResponseData } from "./contracts.js";
 
@@ -51,6 +54,9 @@ export async function executeRequest(
     // make no lease decisions.
     const nowMs = now();
     switch (request.operation) {
+      case "project.list": case "agent.list": case "decision.list": case "note.history":
+      case "review.record": case "review.list": case "index.check": case "index.rebuild":
+        return { schemaVersion: 1, ok: true, data: extensionOperation(db, now, request) };
       case "project.register":
         return { schemaVersion: 1, ok: true, data: registerProject(db, now, request) };
       case "agent.register":
@@ -60,7 +66,7 @@ export async function executeRequest(
       case "task.get":
         return { schemaVersion: 1, ok: true, data: getTask(db, request) };
       case "task.list":
-        return { schemaVersion: 1, ok: true, data: listTasks(db, request) };
+        return { schemaVersion: 1, ok: true, data: listTasks(db, request, nowMs) };
       case "task.claim":
         return { schemaVersion: 1, ok: true, data: claimTask(db, now, request) };
       case "task.renew":
@@ -70,7 +76,7 @@ export async function executeRequest(
       case "task.cancel":
         return { schemaVersion: 1, ok: true, data: cancelTask(db, now, request) };
       case "handoff.submit":
-        return { schemaVersion: 1, ok: true, data: submitHandoff(db, now, request) };
+        return { schemaVersion: 1, ok: true, data: await submitHandoff(db, now, request) };
       case "task.reopen":
         return { schemaVersion: 1, ok: true, data: reopenTask(db, now, request) };
       case "question.ask":
@@ -82,7 +88,13 @@ export async function executeRequest(
       case "decision.record":
         return { schemaVersion: 1, ok: true, data: recordDecision(db, now, request) };
       case "context.get":
-        return { schemaVersion: 1, ok: true, data: getContext(db, nowMs, request) };
+        return { schemaVersion: 1, ok: true, data: await getContext(db, nowMs, request) };
+      case "note.add":
+        return { schemaVersion: 1, ok: true, data: addNote(db, now, request) };
+      case "note.get":
+        return { schemaVersion: 1, ok: true, data: getNote(db, request) };
+      case "search.query":
+        return { schemaVersion: 1, ok: true, data: searchQuery(db, request) };
       default:
         // Every known operation routes above; this guards future additions.
         throw OpError.internal("operation is not implemented yet");

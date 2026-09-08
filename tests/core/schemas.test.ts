@@ -39,6 +39,18 @@ function handoffPayload() {
 // A fully valid envelope per operation, following the contract tables.
 export function validEnvelope(operation: Operation): Record<string, unknown> {
   switch (operation) {
+    case "project.list": case "agent.list":
+      return { schemaVersion: 1, operation, payload: {} };
+    case "decision.list": case "index.check":
+      return { schemaVersion: 1, operation, projectId: PROJECT_ID, payload: {} };
+    case "note.history":
+      return { schemaVersion: 1, operation, projectId: PROJECT_ID, payload: { noteId: TASK_ID } };
+    case "review.list":
+      return { schemaVersion: 1, operation, projectId: PROJECT_ID, payload: { handoffId: TASK_ID } };
+    case "review.record":
+      return { schemaVersion: 1, operation, projectId: PROJECT_ID, actorId: "muse", requestId: "review-1", payload: { handoffId: TASK_ID, observedCommit: HEAD, outcome: "approved", body: "Reviewed" } };
+    case "index.rebuild":
+      return { schemaVersion: 1, operation, projectId: PROJECT_ID, actorId: "muse", requestId: "rebuild-1", payload: {} };
     case "project.register":
       return {
         schemaVersion: 1,
@@ -151,13 +163,46 @@ export function validEnvelope(operation: Operation): Record<string, unknown> {
         projectId: PROJECT_ID,
         payload: { taskId: TASK_ID },
       };
+    case "note.add":
+      return {
+        schemaVersion: 1,
+        operation,
+        projectId: PROJECT_ID,
+        actorId: "muse",
+        requestId: "note-1",
+        payload: {
+          title: "Finding",
+          finding: "The column is missing.",
+          reason: "Resume fails without it.",
+          evidenceRefs: ["reports/example.md"],
+          paths: ["src/a.ts"],
+          observedCommit: null,
+          status: "proposed",
+          taskId: null,
+          supersedesId: null,
+        },
+      };
+    case "note.get":
+      return {
+        schemaVersion: 1,
+        operation,
+        projectId: PROJECT_ID,
+        payload: { noteId: TASK_ID },
+      };
+    case "search.query":
+      return {
+        schemaVersion: 1,
+        operation,
+        projectId: PROJECT_ID,
+        payload: { query: "coupon migration" },
+      };
   }
 }
 
 describe("contract operations", () => {
-  it("defines exactly sixteen operations", () => {
-    assert.equal(OPERATIONS.length, 16);
-    assert.equal(new Set(OPERATIONS).size, 16);
+  it("defines all twenty-seven operations", () => {
+    assert.equal(OPERATIONS.length, 27);
+    assert.equal(new Set(OPERATIONS).size, 27);
   });
 
   for (const operation of OPERATIONS) {
@@ -222,14 +267,14 @@ describe("envelope field rules", () => {
     const reg = validEnvelope("project.register");
     const { requestId: _dropped, ...withoutKey } = reg;
     assert.throws(() => parseRequest(withoutKey), ZodError);
-    for (const operation of ["task.get", "task.list", "context.get", "inbox.list"] as const) {
+    for (const operation of ["task.get", "task.list", "context.get", "inbox.list", "note.get", "search.query"] as const) {
       const base = validEnvelope(operation);
       assert.throws(() => parseRequest({ ...base, requestId: "r-1" }), ZodError, operation);
     }
   });
 
   it("forbids actorId on reads other than inbox.list", () => {
-    for (const operation of ["task.get", "task.list", "context.get"] as const) {
+    for (const operation of ["task.get", "task.list", "context.get", "note.get", "search.query"] as const) {
       const base = validEnvelope(operation);
       assert.throws(() => parseRequest({ ...base, actorId: "muse" }), ZodError, operation);
     }
@@ -281,6 +326,17 @@ describe("envelope field rules", () => {
     if (inbox.operation === "inbox.list") {
       assert.equal(inbox.payload.after, 0);
       assert.equal(inbox.payload.limit, 20);
+    }
+    const search = parseRequest({
+      schemaVersion: 1,
+      operation: "search.query",
+      projectId: PROJECT_ID,
+      payload: { query: "coupon" },
+    });
+    if (search.operation === "search.query") {
+      assert.equal(search.payload.limit, 5);
+      assert.deepEqual(search.payload.files, []);
+      assert.equal(search.payload.includeSuperseded, false);
     }
   });
 });

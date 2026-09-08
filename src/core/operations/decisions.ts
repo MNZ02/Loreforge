@@ -1,3 +1,4 @@
+import { indexDecisionDocument } from "../../storage/search-index.js";
 import { randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import type { Decision, DecisionRecordData, Request } from "../contracts.js";
@@ -71,6 +72,7 @@ export function recordDecision(
       }
     }
     const row = db.prepare("SELECT * FROM decisions WHERE id = ?").get(id) as unknown as DecisionRow;
+    indexDecisionDocument(db, row);
     return { decision: toDecision(row) };
   });
 }

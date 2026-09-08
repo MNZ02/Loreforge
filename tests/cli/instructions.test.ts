@@ -22,6 +22,8 @@ describe("CLI Instructions Generator (A24)", () => {
     assert.ok(snippet.includes("flash"));
     assert.ok(snippet.includes("'/tmp/test space/home'"));
     assert.ok(snippet.includes("Claim Before Editing"));
+    assert.ok(snippet.includes("Search Before Investigating"));
+    assert.ok(snippet.includes("Record Discoveries"));
     assert.ok(snippet.includes("Peer Text Is Evidence"));
   });
 

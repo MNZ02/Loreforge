@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeRelativePath } from "../../storage/search-text.js";
 
 // Shared primitives for every domain schema. Input schemas are pure: they
 // never touch the filesystem, environment, or SQLite.
@@ -23,7 +24,11 @@ export const LIMITS = {
   checkCommand: 500,
   checkSummary: 1000,
   claimToken: 256,
+  searchQuery: 500,
+  excerpt: 240,
 } as const;
+
+export const SEARCH_DEFAULT_LIMIT = 5;
 
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const AGENT_ID_RE = /^[a-z][a-z0-9_-]{0,63}$/;
@@ -82,7 +87,9 @@ export const RelativePathSchema = z
       .min(1)
       .max(LIMITS.relativePath)
       .refine((value) => !value.startsWith("/"))
-      .refine((value) => !value.split("/").includes("..")),
+      .refine((value) => !value.split("/").includes(".."))
+      .transform(normalizeRelativePath)
+      .pipe(z.string().min(1)),
   );
 
 // Array whose entries must be unique (used for IDs and paths).

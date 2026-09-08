@@ -10,6 +10,7 @@ export {
   HeadSchema,
   LIMITS,
   LimitSchema,
+  SEARCH_DEFAULT_LIMIT,
   RelativePathSchema,
   SCHEMA_VERSION,
   TaskStatusSchema,
@@ -55,6 +56,18 @@ export { DecisionRecordPayloadSchema } from "./schemas/decisions.js";
 export type { DecisionRecordPayload } from "./schemas/decisions.js";
 export { ContextGetPayloadSchema } from "./schemas/context.js";
 export type { ContextGetPayload } from "./schemas/context.js";
+export {
+  NoteAddPayloadSchema,
+  NoteGetPayloadSchema,
+  NoteStatusSchema,
+  SearchQueryPayloadSchema,
+} from "./schemas/notes.js";
+export type {
+  NoteAddPayload,
+  NoteGetPayload,
+  NoteStatus,
+  SearchQueryPayload,
+} from "./schemas/notes.js";
 export { OPERATIONS, RequestSchema, parseRequest, validationDetails } from "./schemas/request.js";
 export type { Operation, Request, ValidationIssue } from "./schemas/request.js";
 
@@ -205,6 +218,55 @@ export interface Decision {
   createdAt: string;
 }
 
+export type NoteSource = "note" | "handoff" | "task" | "decision";
+export type SearchHitStatus = "proposed" | "verified" | TaskStatus | "active" | "superseded";
+
+// source=note uses proposed|verified. source=handoff uses the stored outcome.
+// verified is the author's assertion, not a Loreforge proof.
+export interface NoteRecord {
+  id: string;
+  projectId: string;
+  source: NoteSource;
+  title: string;
+  finding: string;
+  reason: string;
+  evidenceRefs: string[];
+  paths: string[];
+  authorId: string | null;
+  createdAt: string;
+  observedCommit: string | null;
+  status: SearchHitStatus;
+  taskId: string | null;
+  supersedesId: string | null;
+  supersededById: string | null;
+  current: boolean;
+  evidenceDirty?: boolean | null;
+}
+
+export interface SearchRevision {
+  supersedesId: string | null;
+  supersededById: string | null;
+  createdAt: string;
+  current: boolean;
+}
+
+export interface SearchHit {
+  id: string;
+  source: NoteSource;
+  title: string;
+  excerpt: string;
+  status: SearchHitStatus;
+  evidenceRefs: string[];
+  paths: string[];
+  authorId: string | null;
+  taskId: string | null;
+  current: boolean;
+  observedCommit?: string | null;
+  evidenceDirty?: boolean | null;
+  freshness?: "unknown" | "current_commit" | "different_commit" | "uncommitted";
+  revision: SearchRevision;
+}
+
 export interface InboxEvent {
   id: number;
   projectId: string;
@@ -269,6 +331,8 @@ export interface TaskGetData {
 export interface TaskListData {
   tasks: Task[];
   omittedCount: number;
+  nextCursor?: string | null;
+  availability?: Record<string, { claimable: boolean; expired: boolean; blockedBy: string[] }>;
 }
 export interface TaskClaimData {
   task: Task;
@@ -307,8 +371,31 @@ export interface DecisionRecordData {
 export interface ContextGetData {
   snapshot: ContextSnapshot;
 }
+export interface NoteAddData {
+  note: NoteRecord;
+}
+export interface NoteGetData {
+  note: NoteRecord;
+}
+export interface SearchQueryData {
+  hits: SearchHit[];
+  omittedCount: number;
+}
+
+export interface Review {
+  id: string; projectId: string; handoffId: string; taskId: string; attempt: number;
+  actorId: string; observedCommit: string; outcome: "approved" | "changes_requested";
+  body: string; createdAt: string;
+}
+export interface ExtensionData {
+  projects?: Project[]; agents?: Agent[]; decisions?: Decision[];
+  review?: Review; reviews?: Review[]; history?: NoteRecord[];
+  nextCursor?: string | null; nextAfter?: string | null;
+  index?: { healthy: boolean; documents: number; expected: number; rebuilt?: boolean };
+}
 
 export type ResponseData =
+  | ExtensionData
   | ProjectRegisterData
   | AgentRegisterData
   | TaskCreateData
@@ -324,7 +411,10 @@ export type ResponseData =
   | QuestionAnswerData
   | InboxListData
   | DecisionRecordData
-  | ContextGetData;
+  | ContextGetData
+  | NoteAddData
+  | NoteGetData
+  | SearchQueryData;
 
 export interface ResponseError {
   code: ErrorCode;
