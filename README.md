@@ -26,7 +26,7 @@ State lives in SQLite (`loreforge.sqlite3` under `--home`, `LOREFORGE_HOME`, or 
 
 This alpha includes task-linked handoffs, questions, decisions, context retrieval, and project-scoped searchable notes (corrections supersede a current note or handoff). Token savings have not been measured.
 
-This checkout targets **0.2.0-alpha.1**. Registry tags may still point at an older release until it is published. Install this checkout with `npm install && npm run build && npm install -g .` to use these changes.
+This package is **0.2.0-alpha.1**. Install with `npm install -g loreforge@alpha`. To run this checkout instead: `npm install && npm run build && npm install -g .`.
 
 Multiple projects can share one state home. Init stores a private repository binding in the Git common directory (`loreforge.json`), so commands resolve the current project automatically. Roster updates supersede the prior roster decision; exact retries are safe. Global session rules contain no fixed project/home.
 
