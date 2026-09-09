@@ -370,7 +370,7 @@ lore note add --input - <<'EOF'
     "title": "Coupon migration filename",
     "finding": "Staging repair is 20260907000002_coupon_checkout_committed_at.sql, not 20260907000000.",
     "reason": "Supabase versions collide if two files share 20260907000000.",
-    "evidenceRefs": ["reports/psigenei-security-2026-09-06/GROK-IMPLEMENTATION-RECHECK.md"],
+    "evidenceRefs": [".loreforge/artifacts/coupon-recheck.md"],
     "paths": ["supabase/migrations/20260907000002_coupon_checkout_committed_at.sql"],
     "observedCommit": null,
     "status": "proposed",

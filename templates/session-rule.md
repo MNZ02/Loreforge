@@ -34,6 +34,10 @@ Before investigating, `search` using the task, error, or affected files, then
 required). After review, add a correction note that supersedes an outdated
 note or handoff. On finish or block, `handoff` with git evidence.
 
+When creating temporary reproduction scripts, SQL probes, or heavy audit dumps,
+always write them to `.loreforge/artifacts/` (which is untracked by git). Never
+create ad-hoc report directories or commit test logs to git.
+
 Print envelopes for this id:
 
 ```bash

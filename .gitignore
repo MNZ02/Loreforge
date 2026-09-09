@@ -5,3 +5,9 @@ dist/
 *.sqlite3-shm
 *.sqlite3-journal
 .DS_Store
+
+# Loreforge local state & runtime artifacts
+.loreforge/
+.artifacts/
+.loreforge-state/
+reports/psigenei*
